@@ -1,0 +1,24 @@
+{
+    "extends": [
+        "airbnb-base",
+        "airbnb-typescript/base",
+        "prettier"
+    ],
+    "plugins": [
+        "prettier"
+    ],
+    "parserOptions": {
+        "project": "tsconfig.json"
+    },
+    "ignorePatterns": [
+        "**/*.d.*",
+        "templates/**.*",
+        "**/*.cjs",
+        "**/*.js",
+        "e2e/**/*"
+    ],
+    "rules": {
+        "prettier/prettier": "error",
+        "no-console": "off"
+    }
+}

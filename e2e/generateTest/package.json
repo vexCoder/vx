@@ -1,0 +1,16 @@
+{
+  "name": "vx-sample",
+  "description": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vx": "file:../../dist"
+  },
+  "scripts": {
+    "cli": "vx"
+  },
+  "workspaces": [
+    "apps/*",
+    "libs/*",
+    "test/*"
+  ]
+}
