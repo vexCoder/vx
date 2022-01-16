@@ -1,9 +1,8 @@
 {
-  "name": "vx",
-  "version": "1.0.0",
+  "name": "vx-cli",
+  "version": "1.0.1",
   "description": "CLI manager for vex-turbo-boilerplate",
   "type": "module",
-  "exports": "./src/cli.ts",
   "scripts": {
     "templates": "rimraf dist/templates && cpy ./templates dist --parents",
     "build": "tsc && yarn templates",
@@ -16,8 +15,12 @@
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
   },
+  "repository": "vexCoder/vx",
   "keywords": [],
-  "author": "deaMorta",
+	"author": {
+		"name": "vexCoder",
+		"email": "freelance.starterpack08@gmail.com"
+	},
   "license": "ISC",
   "devDependencies": {
     "@ava/typescript": "^3.0.1",
