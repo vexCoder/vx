@@ -1,0 +1,8 @@
+{
+  "name": "vx-sample",
+  "description": "",
+  "license": "MIT",
+  "scripts": {
+    "cli": "node ../../dist/cli.js"
+  }
+}

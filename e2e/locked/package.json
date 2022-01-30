@@ -2,11 +2,8 @@
   "name": "vx-sample",
   "description": "",
   "license": "MIT",
-  "devDependencies": {
-    "vx": "file:../../dist"
-  },
   "scripts": {
-    "cli": "vx"
+    "cli": "node ../../dist/cli.js"
   },
   "workspaces": [
     "apps/*",
