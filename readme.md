@@ -21,7 +21,8 @@ yarn global add vx
 
     Commands
     generate  Generate a new app
-    delete    Remove a app
+    delete    Remove an app
+    init      Initialize vex-turbo-boilerplate files
 
     Options
     --help, -h  Show help

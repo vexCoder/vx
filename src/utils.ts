@@ -95,6 +95,7 @@ export const getCli = () => {
           --template, -t  Template to use
           --name, -n  Name of the app
           --type, -t  App type, this is based on the workspace, or vx paths settings
+          --noconfirm, Disable confirmation
       
       
         Examples
