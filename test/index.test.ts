@@ -180,7 +180,6 @@ test("should initialize", async (t) => {
     cwd,
   });
 
-  console.log(cwd);
   t.true(
     await checkDirforFileOrDir(cwd, "package.json"),
     'File "package.json" does not exists'

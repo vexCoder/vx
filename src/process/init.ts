@@ -11,7 +11,6 @@ const init = async (initPath: string) => {
     spinner: sp.dots,
     color: "yellow",
   });
-  console.log(name, currentPath);
 
   const nameMatch = /[^a-z_-]/g.test(name || "");
   if (nameMatch || !name || name.length < 3) {

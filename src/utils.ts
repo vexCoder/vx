@@ -47,7 +47,6 @@ export const getWorkspaceSettings = (pkg: ExtraPackageJson, root: string) => {
     name: v.split("\\").pop(),
   }));
 
-  console.log(root);
   const templatesPath = path.join(
     dirname(fileURLToPath(import.meta.url)),
     "templates"
