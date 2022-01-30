@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 
 import chalk from "chalk";
-import fs from "fs-extra";
 import inquirer from "inquirer";
 import _ from "lodash";
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import path from "path";
 import deleteApp from "./process/delete.js";
 import generate from "./process/generate.js";
-import getSteps, { Commands } from "./steps.js";
+import init from "./process/init.js";
+import getSteps from "./steps.js";
+import { Commands } from "./types.js";
 import {
   getCli,
   getPkg,
@@ -25,15 +23,14 @@ const main = async () => {
   const cli = getCli();
   const pkg = getPkg(root);
 
-  const { apps, workspaces: types } = getWorkspaceSettings(pkg, root);
+  const {
+    apps,
+    workspaces: types,
+    templates,
+    path,
+  } = getWorkspaceSettings(pkg, root);
 
-  const templatesPath = path.join(
-    dirname(fileURLToPath(import.meta.url)),
-    "templates"
-  );
-  const templates = await fs.readdir(templatesPath);
-
-  const availableInputs = ["generate", "delete"];
+  const availableInputs = ["generate", "delete", "init"];
   const pickKeys = {
     generate: ["template", "name", "type"],
     delete: ["name"],
@@ -104,7 +101,7 @@ const main = async () => {
         type,
         name,
         generatePath,
-        tmp: templatesPath,
+        tmp: path.templates,
         root,
         apps,
       });
@@ -112,6 +109,10 @@ const main = async () => {
     }
     case "delete": {
       await deleteApp({ deletePath, apps, name });
+      break;
+    }
+    case "init": {
+      await init(path.init);
       break;
     }
     default:

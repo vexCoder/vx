@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { defineConfig, loadEnv, ConfigEnv } from 'vite';
-import swcReact from 'vite-plugin-swc-react'
+import react from 'vite-plugin-react'
 import inspect from 'vite-plugin-inspect'
 import path from 'path';
 
@@ -20,9 +20,7 @@ export default ({ mode }: ConfigEnv) => {
 
   const plugins = [];
   
-  plugins.push(swcReact({
-    reactFresh: mode === 'development'
-  }));
+  plugins.push(react());
   
   if(!isProd) plugins.push(inspect())
 
@@ -45,9 +43,10 @@ export default ({ mode }: ConfigEnv) => {
       chunkSizeWarningLimit: 2500,
     },
     optimizeDeps: {
-      include: [
-
-      ],
+      include: [],
+    },
+    resolve: {
+      dedupe: ["react", "react-dom"],
     },
   });
 };

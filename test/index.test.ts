@@ -2,7 +2,12 @@ import test from "ava";
 import { execa } from "execa";
 import path from "path";
 import fs from "fs-extra";
-import { checkDirforFileOrDir, deleteFilePattern, getPkg } from "./utils.js";
+import {
+  checkDirforFileOrDir,
+  deleteAllInFolder,
+  deleteFilePattern,
+  getPkg,
+} from "./utils.js";
 
 const root = process.cwd();
 const pathToE2E = path.join(root, "e2e");
@@ -35,7 +40,7 @@ test("should generate react-app", async (t) => {
       cwd,
       "generate",
       "--name=react-app",
-      "--template=with-react-app",
+      "--template=with-react",
       "--type=libs",
       "--noconfirm"
     )
@@ -72,7 +77,7 @@ test("should not delete locked app", async (t) => {
       cwd,
       "generate",
       "--name=react-app",
-      "--template=with-react-app",
+      "--template=with-react",
       "--type=libs",
       "--noconfirm"
     )
@@ -109,7 +114,7 @@ test("should delete unlocked app", async (t) => {
       cwd,
       "generate",
       "--name=react-app",
-      "--template=with-react-app",
+      "--template=with-react",
       "--type=libs",
       "--noconfirm"
     )
@@ -150,7 +155,7 @@ test("should create even without workspace", async (t) => {
       cwd,
       "generate",
       "--name=react-app",
-      "--template=with-react-app",
+      "--template=with-react",
       "--noconfirm"
     )
   );
@@ -166,4 +171,20 @@ test("should create even without workspace", async (t) => {
   );
 
   await deleteFilePattern(cwd, "!*.json");
+});
+
+test("should initialize", async (t) => {
+  const cwd = path.join(pathToE2E, "init");
+
+  await execa("node", ["../../dist/cli.js", "init", "--noconfirm"], {
+    cwd,
+  });
+
+  console.log(cwd);
+  t.true(
+    await checkDirforFileOrDir(cwd, "package.json"),
+    'File "package.json" does not exists'
+  );
+
+  await deleteAllInFolder(cwd);
 });

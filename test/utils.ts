@@ -1,6 +1,7 @@
 import findit from "findit2";
 import minimatch from "minimatch";
 import fs from "fs-extra";
+import { join } from "path";
 import { PackageJson, readPackageUp } from "read-pkg-up";
 
 type ExtraPackageJson = PackageJson & {
@@ -20,8 +21,8 @@ export const getPkg = async (root: string) => {
 };
 
 export const deleteFilePattern = async (path: string, ...args: string[]) => {
-  const paths = [];
-  await new Promise<void>((resolve) => {
+  const paths = await new Promise<string[]>((resolve) => {
+    const temp = [];
     const finder = findit(path);
     finder.on("path", (file: string) => {
       if (path === file) return;
@@ -32,17 +33,27 @@ export const deleteFilePattern = async (path: string, ...args: string[]) => {
         check.push(minimatch(file, pattern, { matchBase: true }));
       }
 
-      if (check.reduce((p, c) => p && c, true)) paths.push(file);
+      if (check.reduce((p, c) => p && c, true)) temp.push(file);
     });
 
     finder.on("end", () => {
-      resolve();
+      resolve(temp);
     });
   });
 
   await Promise.all(
     paths.map(async (file) => {
       await fs.remove(file);
+    })
+  );
+};
+
+export const deleteAllInFolder = async (deletePath: string) => {
+  const paths = await fs.readdir(deletePath);
+
+  await Promise.all(
+    paths.map(async (file) => {
+      await fs.remove(join(deletePath, file));
     })
   );
 };

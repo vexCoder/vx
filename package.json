@@ -4,12 +4,14 @@
   "description": "CLI manager for vex-turbo-boilerplate",
   "type": "module",
   "scripts": {
-    "templates": "rimraf dist/templates && cpy ./templates dist --parents",
-    "build": "tsc && yarn templates",
+    "initializer": "rimraf dist/init && cpy ./init dist --parents --dot",
+    "templates": "rimraf dist/templates && cpy ./templates dist --parents --dot",
+    "build": "tsc && yarn templates && yarn initializer",
+    "cli-test": "node --no-warnings dist/cli.js",
     "cli": "node --no-warnings --loader ts-node/esm src/cli.ts",
-    "prewatch": "yarn templates",
+    "prewatch": "yarn templates && yarn initializer",
     "watch": "tsc -w",
-    "dev": "yarn --cwd ./example cli",
+    "dev": "yarn --cwd ./example cli-test",
     "test": "ava"
   },
   "engines": {

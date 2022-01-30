@@ -1,11 +1,5 @@
 import inquirer from "inquirer";
-
-export type Commands = "generate" | "delete";
-
-export interface Steps {
-  generate: inquirer.QuestionCollection;
-  delete: inquirer.QuestionCollection;
-}
+import { Commands } from "./types.js";
 
 interface Options {
   command: Commands;
@@ -66,6 +60,7 @@ const getSteps = ({
         type: "list",
       },
     },
+    init: {},
   };
 
   const steps = config[command];

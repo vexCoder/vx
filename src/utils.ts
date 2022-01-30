@@ -5,6 +5,8 @@ import fs from "fs-extra";
 import chalk from "chalk";
 import _ from "lodash";
 import { table } from "table";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { ExtraPackageJson } from "./types.js";
 
 export const getWorkspaceApps = (directories: string[]) =>
@@ -45,10 +47,25 @@ export const getWorkspaceSettings = (pkg: ExtraPackageJson, root: string) => {
     name: v.split("\\").pop(),
   }));
 
+  console.log(root);
+  const templatesPath = path.join(
+    dirname(fileURLToPath(import.meta.url)),
+    "templates"
+  );
+
+  const templates = fs.readdirSync(templatesPath);
+
+  const init = path.join(dirname(fileURLToPath(import.meta.url)), "init");
+
   return {
     directories,
     workspaces,
     apps,
+    templates,
+    path: {
+      init,
+      templates: templatesPath,
+    },
   };
 };
 
@@ -70,6 +87,7 @@ export const getCli = () => {
         Commands
           generate  Generate a new app
           delete    Remove an app
+          init      Initialize vex-turbo-boilerplate files
           
         Options
           --help, -h  Show help
@@ -115,6 +133,8 @@ export const printParamTable = (params: Record<any, any>) => {
       _.chain(params[v]).padStart(35).value(),
     ]);
 
+  if (!summary.length) return;
+
   console.log(chalk.green("\nValues:"));
   console.log(
     table(summary, {
@@ -135,4 +155,12 @@ export const printParamTable = (params: Record<any, any>) => {
       singleLine: true,
     })
   );
+};
+
+export const getCurrentFolder = () => {
+  const rootPath = path.resolve(process.cwd());
+  return {
+    path: rootPath,
+    name: path.basename(rootPath),
+  };
 };
