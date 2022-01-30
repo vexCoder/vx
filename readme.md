@@ -20,15 +20,15 @@ yarn global add vx
     $ vx <command> [options]
 
     Commands
-    generate  Generate a new project
-    delete    Remove a project
+    generate  Generate a new app
+    delete    Remove a app
 
     Options
     --help, -h  Show help
     --version, -v  Show version
     --template, -t  Template to use
-    --name, -n  Name of the project
-    --type, -t  Project workspace
+    --name, -n  Name of the app
+    --type, -t  App type, this is based on the workspace, or vx paths settings
     --noconfirm, Disable confirmation
 
 
