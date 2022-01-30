@@ -21,14 +21,6 @@ const main = async () => {
   const root = process.cwd();
 
   const cli = getCli();
-  const pkg = getPkg(root);
-
-  const {
-    apps,
-    workspaces: types,
-    templates,
-    path,
-  } = getWorkspaceSettings(pkg, root);
 
   const availableInputs = ["generate", "delete", "init"];
   const pickKeys = {
@@ -48,6 +40,15 @@ const main = async () => {
 
   const { flags } = cli;
   const { noconfirm, norun, ...args } = flags;
+
+  const pkg = getPkg(root);
+
+  const {
+    apps,
+    workspaces: types,
+    templates,
+    path,
+  } = getWorkspaceSettings(pkg, root);
 
   const steps = getSteps({
     templates,

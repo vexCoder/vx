@@ -26,8 +26,8 @@ export const getWorkspaceApps = (directories: string[]) =>
 
 export const getWorkspaceSettings = (pkg: ExtraPackageJson, root: string) => {
   const directories = (
-    pkg.vx?.workspaces ||
-    (pkg.workspaces as string[]) ||
+    pkg?.vx?.workspaces ||
+    (pkg?.workspaces as string[]) ||
     []
   ).map((v) => path.normalize(path.join(root, v)).replace("\\*", ""));
 
@@ -75,7 +75,7 @@ export const getPkg = (root: string) => {
     normalize: false,
   });
 
-  return pkg.packageJson as ExtraPackageJson;
+  return pkg?.packageJson as ExtraPackageJson;
 };
 
 export const getCli = () => {
