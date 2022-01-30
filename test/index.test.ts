@@ -16,7 +16,7 @@ test("show help", async (t) => {
 });
 
 test("should have workspace folder", async (t) => {
-  const cwd = path.join(pathToE2E, "folderTest");
+  const cwd = path.join(pathToE2E, "folder");
   await deleteFilePattern(cwd, "!*.json", "!.unlock");
   await execa("yarn", cmd(cwd));
 
@@ -26,7 +26,7 @@ test("should have workspace folder", async (t) => {
 });
 
 test("should generate react-app", async (t) => {
-  const cwd = path.join(pathToE2E, "generateTest");
+  const cwd = path.join(pathToE2E, "generate");
 
   await deleteFilePattern(cwd, "!*.json", "!.unlock");
   const { stdout } = await execa(
@@ -35,7 +35,7 @@ test("should generate react-app", async (t) => {
       cwd,
       "generate",
       "--name=react-app",
-      "--template=react-app",
+      "--template=with-react-app",
       "--type=libs",
       "--noconfirm"
     )
@@ -62,7 +62,7 @@ test("should generate react-app", async (t) => {
 });
 
 test("should not delete locked app", async (t) => {
-  const cwd = path.join(pathToE2E, "lockedTest");
+  const cwd = path.join(pathToE2E, "locked");
   const pkg = await getPkg(importMeta.url);
 
   await deleteFilePattern(cwd, "!*.json");
@@ -72,7 +72,7 @@ test("should not delete locked app", async (t) => {
       cwd,
       "generate",
       "--name=react-app",
-      "--template=react-app",
+      "--template=with-react-app",
       "--type=libs",
       "--noconfirm"
     )
@@ -99,7 +99,7 @@ test("should not delete locked app", async (t) => {
 });
 
 test("should delete unlocked app", async (t) => {
-  const cwd = path.join(pathToE2E, "unlockedTest");
+  const cwd = path.join(pathToE2E, "unlocked");
   const pkg = await getPkg(importMeta.url);
 
   await deleteFilePattern(cwd, "!*.json");
@@ -109,7 +109,7 @@ test("should delete unlocked app", async (t) => {
       cwd,
       "generate",
       "--name=react-app",
-      "--template=react-app",
+      "--template=with-react-app",
       "--type=libs",
       "--noconfirm"
     )
@@ -134,6 +134,35 @@ test("should delete unlocked app", async (t) => {
   t.true(
     !(await checkDirforFileOrDir(path.join(cwd, "libs"), "react-app")),
     'Directory "react-app" still exists'
+  );
+
+  await deleteFilePattern(cwd, "!*.json");
+});
+
+test("should create even without workspace", async (t) => {
+  const cwd = path.join(pathToE2E, "root");
+  const pkg = await getPkg(importMeta.url);
+
+  await deleteFilePattern(cwd, "!*.json");
+  const { stdout } = await execa(
+    "yarn",
+    cmd(
+      cwd,
+      "generate",
+      "--name=react-app",
+      "--template=with-react-app",
+      "--noconfirm"
+    )
+  );
+
+  t.true(
+    stdout.includes(`vx-cli ${pkg.version} generate`),
+    "Incorrect command executed"
+  );
+
+  t.true(
+    await checkDirforFileOrDir(cwd, "react-app"),
+    'Directory "react-app" does not exists'
   );
 
   await deleteFilePattern(cwd, "!*.json");

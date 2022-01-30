@@ -42,18 +42,18 @@ const generate = async ({
 
   console.log("");
   try {
-    spinner.start(`Generating ${template} in ${type}/${name}`);
+    spinner.start(`Generating ${template} in ${type || ""}/${name}`);
     let pkg = await fs.readFile(
       path.join(templatePath, "package.json"),
       "utf8"
     );
     pkg = await ejs.render(pkg, { name }, { async: true });
 
-    const outputPath = path.join(root, type, name);
+    const outputPath = path.join(root, type || ".", name);
     await fs.copy(templatePath, outputPath);
     await fs.writeFile(path.join(outputPath, "package.json"), pkg);
     spinner.stop();
-    console.log("✔", `Generated ${template} in ${type}/${name}`);
+    console.log("✔", `Generated ${template} in ${type || ""}/${name}`);
   } catch (error) {
     console.error("\n", error, "\n");
   }

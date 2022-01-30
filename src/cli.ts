@@ -1,97 +1,31 @@
 #!/usr/bin/env node
 
-import meow from "meow";
-import path from "path";
-import inquirer from "inquirer";
-import fs from "fs-extra";
 import chalk from "chalk";
-import { table } from "table";
+import fs from "fs-extra";
+import inquirer from "inquirer";
 import _ from "lodash";
-import { PackageJson, readPackageUp } from "read-pkg-up";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import path from "path";
+import deleteApp from "./process/delete.js";
 import generate from "./process/generate.js";
 import getSteps, { Commands } from "./steps.js";
-import deleteApp from "./process/delete.js";
+import {
+  getCli,
+  getPkg,
+  getWorkspaceSettings,
+  printParamTable,
+} from "./utils.js";
 
 process.on("warning", () => {});
 
-type ExtraPackageJson = PackageJson & {
-  vx?: {
-    workspaces?: string[];
-  };
-};
-
 const main = async () => {
-  const cli = meow(
-    `
-  Usage
-  $ vx <command> [options]
-
-  Commands
-    generate  Generate a new project
-    delete    Remove a project
-    
-  Options
-    --help, -h  Show help
-    --version, -v  Show version
-    --template, -t  Template to use
-    --name, -n  Name of the project
-    --type, -t  Project workspace
-
-
-  Examples
-    $ vx generate --template=react-app --name=my-app
-  `,
-    {
-      importMeta: import.meta,
-      flags: {
-        template: {
-          alias: "t",
-          type: "string",
-        },
-        type: {
-          type: "string",
-        },
-        name: {
-          alias: "n",
-          type: "string",
-        },
-        noconfirm: {
-          type: "boolean",
-        },
-      },
-    }
-  );
-
   const root = process.cwd();
-  const pkg = await readPackageUp({
-    cwd: root,
-    normalize: false,
-  });
 
-  const json: ExtraPackageJson = pkg.packageJson as ExtraPackageJson;
-  const workspaces = (
-    json.vx?.workspaces ||
-    (json.workspaces as string[]) ||
-    []
-  ).map((v) => path.normalize(path.join(root, v)).replace("\\*", ""));
+  const cli = getCli();
+  const pkg = getPkg(root);
 
-  const directories = (
-    await Promise.all<string[]>(
-      workspaces.map(async (workspace) => {
-        let dir = [];
-        try {
-          dir = await fs.readdir(workspace);
-        } catch (error) {
-          await fs.mkdir(workspace);
-          dir = await fs.readdir(workspace);
-        }
-
-        return dir.map((v) => path.join(workspace, v));
-      })
-    )
-  ).reduce((p, c) => p.concat(c), []);
+  const { apps, workspaces: types } = getWorkspaceSettings(pkg, root);
 
   const templatesPath = path.join(
     dirname(fileURLToPath(import.meta.url)),
@@ -104,6 +38,7 @@ const main = async () => {
     generate: ["template", "name", "type"],
     delete: ["name"],
   };
+
   const command = cli.input[0] as Commands;
 
   if (!command || !availableInputs.includes(command)) {
@@ -116,15 +51,6 @@ const main = async () => {
 
   const { flags } = cli;
   const { noconfirm, norun, ...args } = flags;
-
-  const types = workspaces
-    .map((v) => v.split("\\").pop())
-    .map((v) => ({ value: v, name: v }));
-
-  const apps = directories.map((v) => ({
-    value: v,
-    name: v.split("\\").pop(),
-  }));
 
   const steps = getSteps({
     templates,
@@ -143,7 +69,7 @@ const main = async () => {
   const params = _.pick(
     {
       template: templates[0],
-      type: types[0]?.value || ".",
+      type: types[0]?.value,
       deletePath: answers.deletePath,
       generatePath: answers.generatePath,
       ...answers,
@@ -152,34 +78,7 @@ const main = async () => {
     pickKeys[command]
   );
 
-  const summary = Object.keys(params)
-    .sort()
-    .filter((v) => !!params[v])
-    .map((v) => [
-      chalk.green(_.chain(v).capitalize().padEnd(7).value()),
-      _.chain(params[v]).padStart(35).value(),
-    ]);
-
-  console.log(chalk.green("\nValues:"));
-  console.log(
-    table(summary, {
-      border: {
-        topBody: "─",
-        topRight: "┐",
-        topLeft: "┌",
-        bottomLeft: "└",
-        bottomRight: "┘",
-        bottomBody: "─",
-        bodyLeft: "│",
-        bodyRight: "│",
-        joinBody: "|",
-        topJoin: "─",
-        bottomJoin: "─",
-        bodyJoin: "|",
-      },
-      singleLine: true,
-    })
-  );
+  printParamTable(params);
 
   if (!noconfirm) {
     const confirm = await inquirer.prompt([
@@ -200,10 +99,6 @@ const main = async () => {
 
   switch (command) {
     case "generate": {
-      if (!types.find((v) => v.value === type)) {
-        throw new Error(`Workspace ${type} not found`);
-      }
-
       await generate({
         template,
         type,
