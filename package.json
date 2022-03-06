@@ -7,7 +7,8 @@
   "scripts": {
     "cli:test": "turbo run test --scope=cli --force",
     "build": "turbo run build --scope=cli",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "lint": "turbo run lint --scope=cli"
   },
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
