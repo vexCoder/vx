@@ -1,5 +1,5 @@
 {
-  "name": "init",
+  "name": "<%= name %>",
   "version": "1.0.0",
   "private": true,
   "description": "",
@@ -8,7 +8,8 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "postinstall": "husky install"
   },
   "keywords": [],
   "author": "<%= author %> <<%= email %>>",
@@ -33,5 +34,9 @@
   },
   "workspaces": [
     "apps"
-  ]
+  ],
+  "lint-staged": {
+    "*.{ts,tsx}": []
+  },
+  "packageManager": "yarn@1.22.17"
 }

@@ -1,0 +1,13 @@
+{
+    "extends": "../../tsconfig.template.json",
+    "compilerOptions": {
+        "jsx": "react",
+        "paths": {
+            "@components/*": ["./src/components/*"],
+            "@utils/*": ["./src/utils/*"],
+            "@root/*": ["./src/*"]
+        }
+    },
+    "include": ["src/**/*.tsx", "src/**/*.ts"],
+    "exclude": [ "**/*.d.ts"]
+}

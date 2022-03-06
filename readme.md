@@ -39,9 +39,9 @@ yarn global add vx
 
 ### **Templates**
 ----------
-- with-node-app
+- with-node
   - basic node application
-- with-react-app
+- with-react
   - basic react application
 
 ### **Configuration**
