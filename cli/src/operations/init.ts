@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import VError from "verror";
-import Operation, { OpSettings } from "./operation.js";
-import { Commands } from "../types/index.js";
+import { Commands, OpSettings } from "../types/index.js";
+import Operation from "./operation.js";
 
 class InitCommand extends Operation<Commands.init> {
   constructor(cli: OpSettings) {

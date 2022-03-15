@@ -1,107 +1,72 @@
-import avaTest, { ExecutionContext, TestFn } from "ava";
-import { execa } from "execa";
-import fs from "fs-extra";
-import { join } from "path";
+import { ExecutionContext } from "ava";
 import Cli from "../../src/cli.js";
-import GenerateCommand from "../../src/operations/generate.js";
+import { createTest } from "../utils/ava.js";
+import {
+  createTestDir,
+  CreateTestDirValue,
+  testGenerate,
+} from "../utils/generator.js";
 
-const makeTestDir = (name: string, root?: string) => {
-  const nroot = root || process.cwd();
-  const dir = join(nroot, name);
-  const exists = fs.pathExistsSync(dir);
-  if (exists) fs.removeSync(dir);
-  fs.mkdirSync(dir);
-  return dir;
-};
+const test = createTest<{
+  root: CreateTestDirValue;
+}>();
 
-const test = avaTest as TestFn<{
-  root: string;
-}>;
-
-test.before((t) => {
-  t.context.root = makeTestDir("cli-test");
+test.before(async (t) => {
+  t.context.root = await createTestDir("cli-test", {
+    removeDir: true,
+  });
 });
 
-// test.after.always((t) => {
-//   fs.removeSync(t.context.root);
-// });
-
-test("show help", async (t) => {
-  const { stdout } = await execa("yarn", ["cli", "--help"]);
-  t.true(stdout.includes("$ vx <command> [options]"));
+test.after.always(async (t) => {
+  await t.context.root.delete();
 });
 
 test("set root", async (t) => {
-  const cli = new Cli(t.context.root);
-  t.is(cli.root, t.context.root);
+  const cli = new Cli(t.context.root.dir);
+  t.is(cli.root, t.context.root.dir);
 });
 
-const generate = async (
-  t: ExecutionContext,
-  cli: Cli,
-  root: string,
-  name: string,
-  template: string,
-  workspace?: string
-) => {
-  const op: GenerateCommand = (await cli.main([
-    "generate",
-    `--name=${name}`,
-    `--template=${template}`,
-    ...(workspace ? [`--workspace=${workspace}`] : []),
-    "--no-confirm",
-  ])) as GenerateCommand;
+const buildGenerator =
+  (t: ExecutionContext, root: string) =>
+  async (name: string, template: string, workspace: string) => {
+    const op = await testGenerate({
+      root,
+      name,
+      template,
+      workspace,
+    });
 
-  t.log(op.values);
-  t.is(op.root, root);
-  t.is(op.values.name, name);
-  t.true(op.templates.includes(template));
-  if (workspace !== "root") t.true(op.workspaces.includes(workspace));
-
-  const workspacePath = workspace !== "root" ? join(root, workspace) : root;
-  const appPath = join(workspacePath, name);
-  const pkgPath = join(appPath, "package.json");
-
-  const isValid =
-    (await fs.pathExists(appPath)) && (await fs.pathExists(pkgPath));
-  t.true(isValid);
-
-  if (isValid) {
-    const pkgJSON = fs.readJSONSync(pkgPath);
-    t.is(pkgJSON.name, name);
-  }
-};
+    await op.prompt();
+    await op.verify();
+    await op.process();
+  };
 
 test("generate myapp", async (t) => {
-  const newRoot = makeTestDir("generate", t.context.root);
-  const rootPkg = join(newRoot, "package.json");
+  const newRoot = t.context.root.dir;
+  const pkg = await t.context.root.pkg();
 
-  fs.writeJSONSync(rootPkg, {
-    name: "test-generate",
-    workspaces: ["packages/*"],
-  });
+  t.deepEqual(pkg.workspaces, ["packages/*"]);
+  t.is(pkg.name, "cli-test");
 
-  const rootPkgJSON = fs.readJSONSync(rootPkg);
-
-  t.deepEqual(rootPkgJSON.workspaces, ["packages/*"]);
-  t.is(rootPkgJSON.name, "test-generate");
-
-  const cli = new Cli(newRoot);
-  await generate(t, cli, newRoot, "my-app", "with-vite-react", "packages");
-
-  await t.throwsAsync(async () => {
-    await generate(t, cli, newRoot, "my-app", "with-vite-react", "packages");
-  });
+  const generate = buildGenerator(t, newRoot);
 
   await t.notThrowsAsync(async () => {
-    await generate(t, cli, newRoot, "my-app", "with-vite-react", "root");
+    await generate("my-app", "with-vite-react", "packages");
   });
 
   await t.throwsAsync(async () => {
-    await generate(t, cli, newRoot, "my-app", "with-vite-react", "root");
+    await generate("my-app", "with-vite-react", "packages");
   });
 
   await t.notThrowsAsync(async () => {
-    await generate(t, cli, newRoot, "my-app-two", "with-vite-react", "root");
+    await generate("my-app-root", "with-vite-react", "root");
+  });
+
+  await t.throwsAsync(async () => {
+    await generate("my-app-root", "with-vite-react", "root");
+  });
+
+  await t.notThrowsAsync(async () => {
+    await generate("my-app-two", "with-vite-react", "root");
   });
 });

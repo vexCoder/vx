@@ -1,59 +1,47 @@
 import test from "ava";
-import GenerateCommand from "../../../src/operations/generate.js";
-import { getCli } from "../../../src/utils.js";
+import { testGenerate } from "../../utils/generator.js";
 
 test("verify cli generate invalid template", async (t) => {
-  await t.throwsAsync(
-    async () => {
-      const cli = getCli(["generate", "--template=invalid-template"]);
-      await new GenerateCommand(cli).verify();
-    },
-    { message: "Template does not exist" }
-  );
+  const op = testGenerate({ template: "invalid" });
+  await t.throwsAsync(async () => {
+    await op.verify();
+  });
 });
 
 test("verify cli generate correct template", async (t) => {
-  await t.notThrowsAsync(async () => {
-    const reactAppCli = getCli(["generate", "--template=with-vite-react"]);
-    const nodeAppCli = getCli(["generate", "--template=with-node"]);
+  const reactAppOp = testGenerate({
+    template: "with-vite-react",
+    workspace: "root",
+    name: "test-react-app",
+  });
 
-    await new GenerateCommand(reactAppCli).verify();
-    await new GenerateCommand(nodeAppCli).verify();
+  const nodeAppOp = testGenerate({
+    template: "with-node",
+    workspace: "root",
+    name: "test-node-app",
+  });
+
+  await t.notThrowsAsync(async () => {
+    await reactAppOp.verify();
+    await nodeAppOp.verify();
   });
 });
 
 test("get generate steps", async (t) => {
-  const cli = getCli(["generate"]);
-  const command = new GenerateCommand({
-    ...cli,
-    override: {
-      useDefault: true,
-    },
-  });
+  const op = testGenerate();
+  await op.prompt();
 
-  await command.prompt();
-
-  t.is(command.cli?.template, "with-node");
-  t.is(command.cli?.name, undefined);
-  t.is(command.cli?.workspace, "templates");
+  t.is(op.cli?.template, "with-node");
+  t.is(op.cli?.name, undefined);
+  t.is(op.cli?.workspace, "templates");
 });
 
 test("get generate steps with params", async (t) => {
-  const cli = getCli([
-    "generate",
-    "--template=with-vite-react",
-    "--name=my-app",
-  ]);
-  const command = new GenerateCommand({
-    ...cli,
-    override: {
-      useDefault: true,
-    },
-  });
+  const op = testGenerate({ template: "with-vite-react", name: "my-app" });
 
-  await command.prompt();
+  await op.prompt();
 
-  t.is(command.cli?.template, "with-vite-react");
-  t.is(command.cli?.name, "my-app");
-  t.is(command.cli?.workspace, "templates");
+  t.is(op.cli?.template, "with-vite-react");
+  t.is(op.cli?.name, "my-app");
+  t.is(op.cli?.workspace, "templates");
 });

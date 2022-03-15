@@ -2,24 +2,23 @@ import { join } from "path";
 import VError from "verror";
 import fs from "fs-extra";
 import { PackageJson } from "type-fest";
-import Operation, { OpSettings } from "./operation.js";
-import { Commands } from "../types/index.js";
-import { directoryTraversal, getCliRoot } from "../utils.js";
+import Operation from "./operation.js";
+import { Commands, OpSettings } from "../types/index.js";
+import { directoryTraversal, getCliRoot, getProjectRoot } from "../utils.js";
 
-class GenerateCommand extends Operation<Commands.generate> {
+class GenerateOperation extends Operation<Commands.generate> {
   constructor(cli: OpSettings) {
     super(Commands.generate, cli);
   }
 
   public async verify() {
-    const { template, name, workspace } = this.cli;
+    const { template, name, workspace = "root" } = this.cli;
 
     const templatePath = join(getCliRoot(), "templates", template);
 
+    const root = this.root || getProjectRoot();
     const isRoot = workspace === "root" && !this.workspaces.includes("root");
-    const workspacePath = isRoot
-      ? this.root
-      : join(this.root, workspace || ".");
+    const workspacePath = isRoot ? root : join(root, workspace || ".");
 
     const destinationPath = join(workspacePath, name || "");
 
@@ -169,4 +168,4 @@ class GenerateCommand extends Operation<Commands.generate> {
   }
 }
 
-export default GenerateCommand;
+export default GenerateOperation;

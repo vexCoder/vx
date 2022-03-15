@@ -43,7 +43,7 @@ export const getProjectRoot = (r?: string) => {
 export const getCliRoot = () =>
   join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-export const getCli = (argv?: string[]): CliSettings => {
+export const getCli = (...argv: string[]): CliSettings => {
   const cli = meow(
     `
         Usage
@@ -177,9 +177,9 @@ export const getAllDirectoryWithPkg = (r?: string) => {
 };
 
 export const getWorkspaceApps = (nroot?: string, workspace?: string) => {
-  const pkgWorkspaces = getPkgWorkspace(nroot);
-  const workspaces = getWorkspaceList(nroot);
-  const root = nroot || getProjectRoot();
+  const root = nroot ?? getProjectRoot();
+  const pkgWorkspaces = getPkgWorkspace(root);
+  const workspaces = getWorkspaceList(root);
 
   if (workspace && workspaces.includes(workspace)) {
     return fs.readdirSync(join(root, workspace)).map((v) => ({

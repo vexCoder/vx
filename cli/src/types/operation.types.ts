@@ -1,3 +1,5 @@
+import { CliSettings } from "./cli.types.js";
+
 export enum Commands {
   generate = "generate",
   delete = "delete",
@@ -28,7 +30,7 @@ export type Values<T extends Commands> = T extends Commands.generate
 
 export type VerifiedValues<T extends Commands> = BaseValues<T> & Values<T>;
 
-export interface Override {
+export interface Settings {
   useDefault?: boolean;
   disableConfirm?: boolean;
 }
@@ -36,4 +38,8 @@ export interface Override {
 export interface DeleteMapperParams {
   name: string;
   path: string;
+}
+
+export interface OpSettings extends CliSettings, Settings {
+  root?: string;
 }

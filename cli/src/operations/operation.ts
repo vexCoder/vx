@@ -2,7 +2,8 @@ import _ from "lodash";
 import {
   CliSettings,
   Commands,
-  Override,
+  Settings,
+  OpSettings,
   VerifiedValues,
 } from "../types/index.js";
 import {
@@ -12,16 +13,11 @@ import {
 } from "../utils.js";
 import getSteps from "./steps.js";
 
-export interface OpSettings extends CliSettings {
-  override?: Override;
-  root?: string;
-}
-
 abstract class Operation<T extends Commands> {
   public root: string;
   public cli: CliSettings;
   public values: VerifiedValues<T> = {} as VerifiedValues<T>;
-  public override: Override = {};
+  public override: Settings = {};
 
   get templates() {
     return getTemplateList();
@@ -32,11 +28,11 @@ abstract class Operation<T extends Commands> {
   }
 
   get appsWithPath() {
-    return getWorkspaceApps();
+    return getWorkspaceApps(this.root);
   }
 
   get apps() {
-    return getWorkspaceApps().map((v) => v.name);
+    return getWorkspaceApps(this.root).map((v) => v.name);
   }
 
   get defaultApp() {
@@ -80,14 +76,14 @@ abstract class Operation<T extends Commands> {
   public abstract prompt(): void;
 
   constructor(command: T, settings: OpSettings) {
-    const { override, ...cli } = settings;
+    const { useDefault, disableConfirm, root, ...cli } = settings;
 
     this.cli = cli;
-    this.override = override || {};
-    this.override.disableConfirm =
-      override?.disableConfirm || !this.cli.confirm;
+    this.override = {};
+    this.override.disableConfirm = disableConfirm || !this.cli.confirm;
+    this.override.useDefault = useDefault;
     this.values.command = command;
-    if (settings.root) this.root = settings.root;
+    if (root) this.root = root;
   }
 
   static isCommand(command: string): command is Commands {

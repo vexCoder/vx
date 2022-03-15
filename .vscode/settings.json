@@ -1,4 +1,5 @@
 {
+    "typescript.preferences.importModuleSpecifier": "relative",
     "javascript.preferences.importModuleSpecifierEnding": "js",
 	"typescript.preferences.importModuleSpecifierEnding": "js",
     "editor.snippetSuggestions": "bottom",
@@ -14,4 +15,5 @@
         "typescriptreact"
     ],
     "git.ignoreLimitWarning": true,
+    "typescript.tsdk": "node_modules\\typescript\\lib",
 }

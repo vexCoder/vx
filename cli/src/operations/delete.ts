@@ -5,10 +5,9 @@ import { globby } from "globby";
 import pMap from "p-map";
 import rimraf from "rimraf";
 import consola from "consola";
-import { Commands } from "../types/index.js";
-import Operation, { OpSettings } from "./operation.js";
+import { Commands, OpSettings, DeleteMapperParams } from "../types/index.js";
+import Operation from "./operation.js";
 import { getPkg } from "../utils.js";
-import { DeleteMapperParams } from "../types/operation.types.js";
 
 class DeleteOperation extends Operation<Commands.delete> {
   constructor(cli: OpSettings) {
@@ -38,7 +37,7 @@ class DeleteOperation extends Operation<Commands.delete> {
   }
 
   public async prompt() {
-    if (!this.apps.length) {
+    if (!this.appsWithPath.length) {
       throw new VError("No apps found");
     }
 
@@ -64,6 +63,7 @@ class DeleteOperation extends Operation<Commands.delete> {
   }
 
   async getFiles() {
+    console.log(this.values.path);
     const paths = (
       await globby(["./**/*"], {
         cwd: this.values.path,

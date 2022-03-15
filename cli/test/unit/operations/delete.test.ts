@@ -1,40 +1,95 @@
-import test from "ava";
-import DeleteCommand from "../../../src/operations/delete.js";
-import { getCli } from "../../../src/utils.js";
+import { $, createTest } from "../../utils/ava.js";
+import {
+  createTestDir,
+  CreateTestDirValue,
+  testDelete,
+  testGenerate,
+} from "../../utils/generator.js";
 
-test("verify cli delete invalid name", async (t) => {
-  await t.throwsAsync(
-    async () => {
-      const cli = getCli(["delete", "--name=invalid-name"]);
-      await new DeleteCommand(cli).verify();
-    },
-    { message: "App does not exist" }
-  );
-});
+const test = createTest<{
+  project: CreateTestDirValue;
+}>();
 
-test("get delete steps", async (t) => {
-  const cli = getCli(["delete"]);
-  const command = new DeleteCommand({
-    ...cli,
-    override: {
-      useDefault: true,
-    },
-  });
-  await command.prompt();
-
-  t.is(command.cli?.name, undefined);
-});
-
-test("get delete steps with params", async (t) => {
-  const cli = getCli(["delete", "--name=my-app"]);
-  const command = new DeleteCommand({
-    ...cli,
-    override: {
-      useDefault: true,
-    },
+test.before(async (t) => {
+  t.context.project = await createTestDir("delete-test", {
+    removeDir: true,
   });
 
-  await command.prompt();
+  const op = testGenerate({
+    root: t.context.project.dir,
+    name: "delete-app",
+    template: "with-vite-react",
+    workspace: "packages",
+  });
 
-  t.is(command.cli?.name, "my-app");
+  await op.prompt();
+  await op.verify();
+  await op.process();
 });
+
+test.after.always(async () => {
+  await t.context.project.delete();
+});
+
+test(
+  "verify cli delete invalid name",
+  $(async (t, ctx) => {
+    const { project } = ctx;
+
+    await t.throwsAsync(
+      async () => {
+        const op = testDelete({
+          root: project.dir,
+          name: "invalid-name",
+        });
+
+        await op.verify();
+      },
+      { message: "App does not exist" }
+    );
+  })
+);
+
+test(
+  "get delete steps",
+  $(async (t, ctx) => {
+    const { project } = ctx;
+    const op = testDelete({
+      root: project.dir,
+    });
+
+    await op.prompt();
+
+    t.is(op.cli?.name, undefined);
+  })
+);
+
+test(
+  "get delete steps with params",
+  $(async (t, ctx) => {
+    const { project } = ctx;
+    const op = testDelete({
+      root: project.dir,
+      name: "delete-app",
+    });
+
+    await op.prompt();
+
+    t.is(op.cli?.name, "delete-app");
+  })
+);
+
+test(
+  "get to delete paths",
+  $(async (t, ctx) => {
+    const { project } = ctx;
+    const op = testDelete({
+      root: project.dir,
+      name: "delete-app",
+    });
+
+    const files = await op.getFiles();
+
+    t.true(!!files);
+  })
+);

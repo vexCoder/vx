@@ -5,6 +5,9 @@ import { fileURLToPath } from "url";
 export const getCurrentPath = () =>
   join(dirname(fileURLToPath(import.meta.url)));
 
+export const getCliRoot = () =>
+  join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+
 export const makeSampleDir = async () => {
   const path = getCurrentPath();
   const sampleDir = join(path, "sample");

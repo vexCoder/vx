@@ -70,13 +70,13 @@ test("set root throw invalid path", (t) => {
 });
 
 test("get cli", (t) => {
-  const cli = getCli(["generate"]);
+  const cli = getCli("generate");
 
   t.true(!!cli);
 });
 
 test("get cli values", (t) => {
-  const cli = getCli(["generate", "--template=react-app", "--name=my-app"]);
+  const cli = getCli("generate", "--template=react-app", "--name=my-app");
 
   t.deepEqual(cli, {
     command: "generate",
