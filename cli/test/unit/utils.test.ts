@@ -83,6 +83,7 @@ test("get cli values", (t) => {
     template: "react-app",
     name: "my-app",
     confirm: true,
+    concurrency: Infinity,
   });
 });
 
@@ -113,11 +114,11 @@ test("get workspaces", (t) => {
 
 test("get workspace apps", (t) => {
   const root = getCliRoot();
-  const types = getWorkspaceApps("templates");
+  const types = getWorkspaceApps(root, "templates");
   const workspaceDir = fs.readdirSync(join(root, "templates"));
 
   t.is(types.length, workspaceDir.length);
-  t.is(types[0]?.name, workspaceDir[0]);
+  t.true(!!types.find((v) => v.name === workspaceDir[0]));
 });
 
 test("get all workspaces apps", (t) => {
@@ -125,6 +126,6 @@ test("get all workspaces apps", (t) => {
   const types = getWorkspaceApps();
   const workspaceDir = fs.readdirSync(join(root, "templates"));
 
-  t.is(types.length, workspaceDir.length);
-  t.is(types[0]?.name, workspaceDir[0]);
+  t.is(types.length, 2 + workspaceDir.length);
+  t.true(!!types.find((v) => v.name === workspaceDir[0]));
 });

@@ -158,8 +158,8 @@ class GenerateCommand extends Operation<Commands.generate> {
     const { destination, workspace } = this.values;
 
     try {
-      this.createDirIfNotExists(workspace);
-      this.createDirIfNotExists(destination);
+      await this.createDirIfNotExists(workspace);
+      await this.createDirIfNotExists(destination);
       await this.moveFiles();
       await this.updateDestPkg({ name: this.values.name });
     } catch (error) {
