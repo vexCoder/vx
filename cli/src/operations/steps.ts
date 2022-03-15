@@ -19,7 +19,10 @@ export interface GenerateAnswers {
 }
 
 interface DeleteParams {
-  apps: string[];
+  apps: {
+    name: string;
+    path: string;
+  }[];
 }
 
 export interface DeleteAnswers {

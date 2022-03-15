@@ -1,5 +1,4 @@
 import test from "ava";
-import VError from "verror";
 import DeleteCommand from "../../../src/operations/delete.js";
 import { getCli } from "../../../src/utils.js";
 
@@ -9,7 +8,7 @@ test("verify cli delete invalid name", async (t) => {
       const cli = getCli(["delete", "--name=invalid-name"]);
       await new DeleteCommand(cli).verify();
     },
-    { instanceOf: VError, message: "App does not exist" }
+    { message: "App does not exist" }
   );
 });
 
@@ -34,6 +33,7 @@ test("get delete steps with params", async (t) => {
       useDefault: true,
     },
   });
+
   await command.prompt();
 
   t.is(command.cli?.name, "my-app");

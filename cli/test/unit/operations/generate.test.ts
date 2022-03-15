@@ -1,5 +1,4 @@
 import test from "ava";
-import VError from "verror";
 import GenerateCommand from "../../../src/operations/generate.js";
 import { getCli } from "../../../src/utils.js";
 
@@ -9,7 +8,7 @@ test("verify cli generate invalid template", async (t) => {
       const cli = getCli(["generate", "--template=invalid-template"]);
       await new GenerateCommand(cli).verify();
     },
-    { instanceOf: VError, message: "Template does not exist" }
+    { message: "Template does not exist" }
   );
 });
 

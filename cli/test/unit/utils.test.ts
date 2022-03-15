@@ -1,7 +1,6 @@
 import test from "ava";
 import fs from "fs-extra";
 import { join } from "path";
-import VError from "verror";
 import Cli from "../../src/cli.js";
 import {
   getCli,
@@ -66,7 +65,7 @@ test("set root throw invalid path", (t) => {
     () => {
       setRoot("../is-an-invalid-path");
     },
-    { instanceOf: VError, message: "Invalid path" }
+    { message: "Invalid path" }
   );
 });
 
@@ -92,7 +91,7 @@ test("verify cli invalid command", async (t) => {
     async () => {
       await new Cli().main(["invalid-command"]);
     },
-    { instanceOf: VError, message: "Invalid command" }
+    { message: "Invalid command" }
   );
   t.true(true);
 });
@@ -118,7 +117,7 @@ test("get workspace apps", (t) => {
   const workspaceDir = fs.readdirSync(join(root, "templates"));
 
   t.is(types.length, workspaceDir.length);
-  t.is(types[0], workspaceDir[0]);
+  t.is(types[0]?.name, workspaceDir[0]);
 });
 
 test("get all workspaces apps", (t) => {
@@ -127,5 +126,5 @@ test("get all workspaces apps", (t) => {
   const workspaceDir = fs.readdirSync(join(root, "templates"));
 
   t.is(types.length, workspaceDir.length);
-  t.is(types[0], workspaceDir[0]);
+  t.is(types[0]?.name, workspaceDir[0]);
 });

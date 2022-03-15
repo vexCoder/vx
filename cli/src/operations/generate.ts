@@ -17,9 +17,11 @@ class GenerateCommand extends Operation<Commands.generate> {
     const templatePath = join(getCliRoot(), "templates", template);
 
     const isRoot = workspace === "root" && !this.workspaces.includes("root");
-    const workspacePath = isRoot ? this.root : join(this.root, workspace);
+    const workspacePath = isRoot
+      ? this.root
+      : join(this.root, workspace || ".");
 
-    const destinationPath = join(workspacePath, name);
+    const destinationPath = join(workspacePath, name || "");
 
     const templateExists = await fs.pathExists(templatePath);
 

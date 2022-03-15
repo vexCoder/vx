@@ -9,10 +9,11 @@ export type BaseValues<T extends Commands> = {
 };
 
 export interface GenerateValues {
-  workspace?: string;
-  template?: string;
-  destination?: string;
-  name?: string;
+  workspace: string;
+  template: string;
+  destination: string;
+  name: string;
+  isRoot: boolean;
 }
 
 export interface DeleteValues {
@@ -30,4 +31,9 @@ export type VerifiedValues<T extends Commands> = BaseValues<T> & Values<T>;
 export interface Override {
   useDefault?: boolean;
   disableConfirm?: boolean;
+}
+
+export interface DeleteMapperParams {
+  name: string;
+  path: string;
 }

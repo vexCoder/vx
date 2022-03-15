@@ -6,4 +6,5 @@ export interface CliSettings {
   name?: string;
   workspace?: string;
   confirm?: boolean;
+  concurrency?: number;
 }

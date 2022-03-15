@@ -31,8 +31,12 @@ abstract class Operation<T extends Commands> {
     return _.first(this.templates);
   }
 
-  get apps() {
+  get appsWithPath() {
     return getWorkspaceApps();
+  }
+
+  get apps() {
+    return getWorkspaceApps().map((v) => v.name);
   }
 
   get defaultApp() {
