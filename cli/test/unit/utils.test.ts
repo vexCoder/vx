@@ -126,6 +126,7 @@ test("get all workspaces apps", (t) => {
   const types = getWorkspaceApps();
   const workspaceDir = fs.readdirSync(join(root, "templates"));
 
+  t.log(root, types);
   t.is(types.length, 2 + workspaceDir.length);
   t.true(!!types.find((v) => v.name === workspaceDir[0]));
 });

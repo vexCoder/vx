@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import { dirname, join } from "path";
+import { PackageJson } from "type-fest";
 import { fileURLToPath } from "url";
 
 export const getCurrentPath = () =>
@@ -17,4 +18,8 @@ export const makeSampleDir = async () => {
   }
 
   return sampleDir;
+};
+
+export const readPkg = async (dir: string) => {
+  return fs.readJSON(dir) as PackageJson;
 };

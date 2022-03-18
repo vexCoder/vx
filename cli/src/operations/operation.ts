@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { dirname } from "path";
 import {
   CliSettings,
   Commands,
@@ -83,7 +84,7 @@ abstract class Operation<T extends Commands> {
     this.override.disableConfirm = disableConfirm || !this.cli.confirm;
     this.override.useDefault = useDefault;
     this.values.command = command;
-    if (root) this.root = root;
+    if (root) this.root = dirname(root);
   }
 
   static isCommand(command: string): command is Commands {

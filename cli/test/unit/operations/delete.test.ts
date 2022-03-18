@@ -5,6 +5,7 @@ import {
   testDelete,
   testGenerate,
 } from "../../utils/generator.js";
+import { readPkg } from "../../utils/utils.js";
 
 const test = createTest<{
   project: CreateTestDirValue;
@@ -27,7 +28,7 @@ test.before(async (t) => {
   await op.process();
 });
 
-test.after.always(async () => {
+test.after.always(async (t) => {
   await t.context.project.delete();
 });
 
@@ -89,7 +90,10 @@ test(
     });
 
     const files = await op.getFiles();
+    const pkgPath = files.find((v) => v.name === "package.json");
+    const config = await readPkg(pkgPath.path);
 
-    t.true(!!files);
+    t.true(files.map((v) => v.name).includes("package.json"));
+    t.is(config.name, "delete-app");
   })
 );

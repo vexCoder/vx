@@ -21,19 +21,30 @@ export const setRoot = (path?: string) => {
   throw new VError("Invalid path");
 };
 
+export const getPkg = (path: string) => {
+  const pkgPath = join(path, "package.json");
+  if (!fs.pathExistsSync(pkgPath)) return;
+  const pkg = fs.readJSONSync(pkgPath);
+  return pkg as PackageJson;
+};
+
 export const getProjectRoot = (r?: string) => {
   let root = "";
-  let tmp = r || process.cwd();
+  let tmp = r ?? process.cwd();
 
   while (root !== tmp) {
-    const doesPathExist = fs.pathExistsSync(join(tmp, "package.json"));
-    const { workspaces } = fs.readJSONSync(join(tmp, "package.json"));
+    const pkg = getPkg(tmp);
 
-    if (doesPathExist && workspaces) {
+    if (pkg && pkg.workspaces) {
       root = tmp;
       break;
     } else {
-      tmp = join(tmp, "..");
+      const ntmp = join(tmp, "..");
+      if (tmp === ntmp) {
+        throw new VError("Could not find project root");
+      }
+
+      tmp = ntmp;
     }
   }
 
@@ -113,13 +124,6 @@ export const getTemplateList = () => {
   return templates;
 };
 
-export const getPkg = (path: string) => {
-  const pkgPath = join(path, "package.json");
-  if (!fs.pathExistsSync(pkgPath)) return;
-  const pkg = fs.readJSONSync(pkgPath);
-  return pkg as PackageJson;
-};
-
 export const getPkgWorkspace = (r?: string) => {
   const root = getProjectRoot(r);
   const pkg = getPkg(root);
@@ -177,7 +181,7 @@ export const getAllDirectoryWithPkg = (r?: string) => {
 };
 
 export const getWorkspaceApps = (nroot?: string, workspace?: string) => {
-  const root = nroot ?? getProjectRoot();
+  const root = nroot ? dirname(nroot) : getProjectRoot();
   const pkgWorkspaces = getPkgWorkspace(root);
   const workspaces = getWorkspaceList(root);
 
@@ -210,7 +214,9 @@ export const getWorkspaceApps = (nroot?: string, workspace?: string) => {
 
     const dirWithPkg = getAllDirectoryWithPkg(root);
     const validApps = dirWithPkg.filter(
-      (v) => !!apps.find((o) => o.path === v.path)
+      (v) =>
+        !!apps.find((o) => o.path === v.path) &&
+        !!apps.find((o) => o.path.includes(root))
     );
 
     return validApps;
