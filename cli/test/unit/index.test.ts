@@ -1,4 +1,3 @@
-import { ExecutionContext } from "ava";
 import Cli from "../../src/cli.js";
 import { createTest } from "../utils/ava.js";
 import {
@@ -27,9 +26,9 @@ test("set root", async (t) => {
 });
 
 const buildGenerator =
-  (t: ExecutionContext, root: string) =>
+  (root: string) =>
   async (name: string, template: string, workspace: string) => {
-    const op = await testGenerate({
+    const op = testGenerate({
       root,
       name,
       template,
@@ -48,7 +47,7 @@ test("generate myapp", async (t) => {
   t.deepEqual(pkg.workspaces, ["packages/*"]);
   t.is(pkg.name, "cli-test");
 
-  const generate = buildGenerator(t, newRoot);
+  const generate = buildGenerator(newRoot);
 
   await t.notThrowsAsync(async () => {
     await generate("my-app", "with-vite-react", "packages");

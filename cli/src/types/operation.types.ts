@@ -1,4 +1,11 @@
-import { CliSettings } from "./cli.types.js";
+export interface CliSettings {
+  command: string | Commands;
+  template?: string;
+  name?: string;
+  workspace?: string;
+  confirm?: boolean;
+  concurrency?: number;
+}
 
 export enum Commands {
   generate = "generate",
@@ -18,9 +25,23 @@ export interface GenerateValues {
   isRoot: boolean;
 }
 
-export interface DeleteValues {
-  path?: string;
+export interface GenerateProxy {
+  workspace: string;
 }
+
+export interface DeleteValues {
+  path: string;
+}
+export interface DeleteProxy {
+  path?: string;
+  name?: string;
+}
+
+export type Proxy<T extends Commands> = T extends Commands.generate
+  ? GenerateProxy
+  : T extends Commands.delete
+  ? DeleteProxy
+  : object;
 
 export type Values<T extends Commands> = T extends Commands.generate
   ? GenerateValues

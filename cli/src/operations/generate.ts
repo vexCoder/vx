@@ -16,7 +16,7 @@ class GenerateOperation extends Operation<Commands.generate> {
 
     const templatePath = join(getCliRoot(), "templates", template);
 
-    const root = this.root || getProjectRoot();
+    const root = this.root ?? getProjectRoot();
     const isRoot = workspace === "root" && !this.workspaces.includes("root");
     const workspacePath = isRoot ? root : join(root, workspace || ".");
 

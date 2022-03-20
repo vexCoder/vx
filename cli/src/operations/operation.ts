@@ -1,11 +1,12 @@
 import _ from "lodash";
-import { dirname } from "path";
+import { normalize } from "path";
 import {
   CliSettings,
   Commands,
-  Settings,
   OpSettings,
+  Settings,
   VerifiedValues,
+  Proxy,
 } from "../types/index.js";
 import {
   getTemplateList,
@@ -18,6 +19,7 @@ abstract class Operation<T extends Commands> {
   public root: string;
   public cli: CliSettings;
   public values: VerifiedValues<T> = {} as VerifiedValues<T>;
+  public tmp: Proxy<T> = {} as Proxy<T>;
   public override: Settings = {};
 
   get templates() {
@@ -59,15 +61,8 @@ abstract class Operation<T extends Commands> {
   }
 
   set updateValues(partial: Partial<VerifiedValues<T>>) {
-    this.values = {
-      ...this.values,
-      ...partial,
-    };
-  }
-
-  set updateCli(partial: Partial<CliSettings>) {
-    this.cli = {
-      ...this.cli,
+    this.tmp = {
+      ...this.tmp,
       ...partial,
     };
   }
@@ -84,7 +79,7 @@ abstract class Operation<T extends Commands> {
     this.override.disableConfirm = disableConfirm || !this.cli.confirm;
     this.override.useDefault = useDefault;
     this.values.command = command;
-    if (root) this.root = dirname(root);
+    if (root) this.root = normalize(root);
   }
 
   static isCommand(command: string): command is Commands {

@@ -29,14 +29,13 @@ class Cli {
     const commands = [Commands.generate, Commands.delete, Commands.init];
     const padded = commands.map((v) => `\n    - ${v}`);
 
-    console.log("These are the allowed commands:%s%s%s", ...padded);
+    throw new VError("These are the allowed commands:%s%s%s", ...padded);
   }
 
   async main(args?: string[]) {
     this.cli = Utils.getCli(...args);
     if (!Command.isCommand(this.cli.command)) {
       this.printCommand();
-      throw new VError("Invalid command");
     }
 
     const operation = new this.process[this.cli.command]({

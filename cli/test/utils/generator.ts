@@ -92,3 +92,33 @@ export const testGenerate = (options: GenerateOpParams = {}) => {
 
   return op;
 };
+
+export const getPkg = async (path: string) => {
+  const pkgPath = join(path, "package.json");
+  return (await fs.readJSON(pkgPath)) as PackageJson;
+};
+
+export const createPkg = async (path: string, pkg: Partial<PackageJson>) => {
+  const json = await getPkg(path);
+
+  fs.writeJSON(join(path, "package.json"), {
+    ...json,
+    ...pkg,
+  });
+
+  return path;
+};
+
+export const createApp = async (
+  name: string,
+  path: string,
+  options: PackageJson = {}
+) => {
+  const appPath = join(path, name);
+  await fs.mkdir(appPath);
+  await createPkg(appPath, {
+    name,
+    ...options,
+  });
+  return appPath;
+};

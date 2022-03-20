@@ -181,7 +181,7 @@ export const getAllDirectoryWithPkg = (r?: string) => {
 };
 
 export const getWorkspaceApps = (nroot?: string, workspace?: string) => {
-  const root = nroot ? dirname(nroot) : getProjectRoot();
+  const root = normalize(nroot ?? getProjectRoot());
   const pkgWorkspaces = getPkgWorkspace(root);
   const workspaces = getWorkspaceList(root);
 

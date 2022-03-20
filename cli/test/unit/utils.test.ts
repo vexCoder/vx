@@ -88,12 +88,9 @@ test("get cli values", (t) => {
 });
 
 test("verify cli invalid command", async (t) => {
-  await t.throwsAsync(
-    async () => {
-      await new Cli().main(["invalid-command"]);
-    },
-    { message: "Invalid command" }
-  );
+  await t.throwsAsync(async () => {
+    await new Cli().main(["invalid-command"]);
+  });
   t.true(true);
 });
 

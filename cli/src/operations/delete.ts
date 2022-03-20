@@ -1,39 +1,50 @@
-import VError from "verror";
+import consola from "consola";
 import fs from "fs-extra";
-import { join } from "path";
 import { globby } from "globby";
 import pMap from "p-map";
+import { join } from "path";
 import rimraf from "rimraf";
-import consola from "consola";
-import { Commands, OpSettings, DeleteMapperParams } from "../types/index.js";
-import Operation from "./operation.js";
+import VError from "verror";
+import {
+  Commands,
+  DeleteMapperParams,
+  DeleteValues,
+  OpSettings,
+} from "../types/index.js";
 import { getPkg } from "../utils.js";
+import Operation from "./operation.js";
 
 class DeleteOperation extends Operation<Commands.delete> {
   constructor(cli: OpSettings) {
     super(Commands.delete, cli);
   }
 
-  public async verify() {
-    const { name } = this.cli;
+  private async isUnlock(p?: string) {
+    return fs.pathExists(join(p ?? this.values.path, ".unlock"));
+  }
 
-    const appCheckByPath = this.appsWithPath.find((v) => v.path === name);
-    const appCheckByName = this.appsWithPath.find((v) => v.name === name);
-    if (name && !appCheckByPath && !appCheckByName) {
+  public async verify(options?: DeleteValues) {
+    const path = options?.path ?? this.tmp.path;
+
+    if (!(await fs.pathExists(path))) {
+      throw new VError("Path does not exist");
+    }
+
+    const app = this.appsWithPath.find((v) => v.path === path);
+    if ((path && !app) || !app.path) {
       throw new VError("App does not exist");
     }
 
-    let npath: string | undefined;
-    if (!appCheckByPath && !!appCheckByName) {
-      npath = appCheckByName.path;
+    const pkg = await getPkg(app.path);
+    if (!pkg || (pkg && pkg.name !== this.tmp.name) || !this.tmp.name) {
+      throw new VError("Directory is not an app");
     }
 
-    if (!(await fs.pathExists(join(npath, ".unlock"))))
+    if (!(await this.isUnlock(path))) {
       throw new VError("App is locked");
+    }
 
-    this.updateValues = {
-      path: npath || name,
-    };
+    this.values.path = path;
   }
 
   public async prompt() {
@@ -45,9 +56,12 @@ class DeleteOperation extends Operation<Commands.delete> {
       apps: this.appsWithPath,
     });
 
-    this.updateCli = {
-      name: this.cli.name || answers.app,
-    };
+    const name = this.cli.name ?? answers.app;
+
+    const findApp = this.appsWithPath.find((v) => v.name === name);
+
+    this.tmp.path = findApp?.path;
+    this.tmp.name = name;
   }
 
   async checkApp() {
@@ -63,7 +77,6 @@ class DeleteOperation extends Operation<Commands.delete> {
   }
 
   async getFiles() {
-    console.log(this.values.path);
     const paths = (
       await globby(["./**/*"], {
         cwd: this.values.path,
