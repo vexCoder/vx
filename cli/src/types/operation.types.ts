@@ -24,12 +24,15 @@ export interface GenerateValues {
   workspace: string;
   template: string;
   destination: string;
+  root: string;
   name: string;
+  isRoot: boolean;
 }
 
 export interface GenerateProxy {
   workspace?: string;
   template?: string;
+  root?: string;
   destination?: string;
   name?: string;
   isRoot?: boolean;

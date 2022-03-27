@@ -35,7 +35,7 @@ export const createTestDir = async (
   await fs.mkdirp(testDir);
 
   const pkgPath = join(testDir, "package.json");
-  if (!options?.removePkg) {
+  if (!options?.removePkg && options?.removeDir) {
     await fs.writeJSON(pkgPath, {
       name,
       workspaces: ["packages/*"],

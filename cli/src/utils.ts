@@ -2,13 +2,12 @@ import fg, { Options } from "fast-glob";
 import fs from "fs-extra";
 import _ from "lodash";
 import meow from "meow";
+import pMap from "p-map";
 import { dirname, join, normalize } from "path";
 import { PackageJson } from "type-fest";
 import { fileURLToPath } from "url";
 import VError from "verror";
-import pMap, * as PMap from "p-map";
-import ora, { Color } from "ora";
-import { CliSettings } from "./types/index.js";
+import { CliSettings, SpinnerOptions } from "./types/index.js";
 
 export const setRoot = (path?: string) => {
   const newRoot = path ? normalize(path) : process.cwd();
@@ -33,8 +32,15 @@ export const getPkg = (path?: string) => {
 export const setPkg = (path?: string, values: Partial<PackageJson> = {}) => {
   if (!path) return;
   let pkg = getPkg(path) ?? {};
-  const newPkg = _.merge(pkg, values);
-  fs.writeJSONSync(join(path, "package.json"), newPkg, { spaces: 2 });
+  fs.writeJSONSync(
+    join(path, "package.json"),
+    {
+      ...pkg,
+      ...values,
+    },
+    { spaces: 2 }
+  );
+
   pkg = getPkg(path);
   if (!pkg) return;
   return pkg as PackageJson;
@@ -273,32 +279,18 @@ export const getInitFiles = async (destination: string) => {
   return files;
 };
 
-export const spinnerBuilder = <T>(
+export const iterableLoader = async <T, Z>(
   p: Iterable<T>,
-  settings: PMap.Options,
-  messager?: (p: T) => { message: string; color?: Color } | string
+  settings: SpinnerOptions<T, Z>
 ) => {
-  const spinner = ora({
-    spinner: "dots8Bit",
-  });
+  const { messager, ...opts } = settings;
 
-  return async <Z>(map: (params: T) => Promise<Z>) => {
-    const mapWrapper = async (params: T): Promise<Z> => {
-      const res = await map(params);
-      if (messager) {
-        const tmp = messager(params);
-        if (typeof tmp === "string") spinner.text = tmp;
-        else {
-          const { message, color } = tmp;
-          spinner.text = message;
-          spinner.color = color;
-        }
-      }
-
-      return res;
-    };
-
-    const res = (await pMap(p, mapWrapper, settings)) as Z[];
-    return res;
+  const mapWrapper = (params: T): Promise<Z> => {
+    if (messager) messager(params);
+    return settings.map(params);
   };
+
+  const res = (await pMap(p, mapWrapper, { concurrency: 1, ...opts })) as Z[];
+
+  return res;
 };

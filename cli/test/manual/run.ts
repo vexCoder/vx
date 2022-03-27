@@ -3,7 +3,9 @@ import Cli from "../../src/cli.js";
 import { createTestDir } from "../utils/generator.js";
 
 const main = async () => {
-  const { dir } = await createTestDir("manual-test");
+  const { dir } = await createTestDir("manual-test", {
+    removeDir: true,
+  });
 
   const cli = new Cli(dir);
 
