@@ -7,8 +7,7 @@ module.exports = {
     "--loader=ts-node/esm"
   ],
   files: [
-    "test/**/*.test.*",
-    // "!test/src/index.test.ts"
+    "test/unit/*.test.*"
   ],
   require: [
     "./test/shim.ts"

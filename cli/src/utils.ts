@@ -1,4 +1,4 @@
-import fg from "fast-glob";
+import fg, { Options } from "fast-glob";
 import fs from "fs-extra";
 import _ from "lodash";
 import meow from "meow";
@@ -6,6 +6,8 @@ import { dirname, join, normalize } from "path";
 import { PackageJson } from "type-fest";
 import { fileURLToPath } from "url";
 import VError from "verror";
+import pMap, * as PMap from "p-map";
+import ora, { Color } from "ora";
 import { CliSettings } from "./types/index.js";
 
 export const setRoot = (path?: string) => {
@@ -95,7 +97,7 @@ export const getCli = (...argv: string[]): CliSettings => {
         `,
     {
       importMeta: import.meta,
-      ...(!!argv && { argv }),
+      ...(!!argv.length && { argv }),
       flags: {
         template: {
           alias: "t",
@@ -235,23 +237,25 @@ export const getWorkspaceApps = (nroot?: string, workspace?: string) => {
   return [];
 };
 
-export const directoryTraversal = async <T>(
+export const directoryTraversal = async <T = string>(
   path: string,
   matcher: string[],
-  callback: (file: string, dir: string) => Promise<T>
+  callback?: (file: string, dir: string) => Promise<T>,
+  settings?: Options
 ) => {
   const files = await fg(matcher, {
     cwd: path,
     dot: true,
     onlyFiles: false,
     markDirectories: true,
+    ...settings,
   });
 
-  const filesToCopy: T[] = await Promise.all(
-    files.map(async (v) => callback(v, path))
+  const filesToCopy: (T | string)[] = await Promise.all(
+    files.map(async (v) => callback?.(v, path) ?? v)
   );
 
-  return filesToCopy;
+  return filesToCopy as typeof callback extends undefined ? string[] : T[];
 };
 
 export const getInitFiles = async (destination: string) => {
@@ -267,4 +271,34 @@ export const getInitFiles = async (destination: string) => {
   );
 
   return files;
+};
+
+export const spinnerBuilder = <T>(
+  p: Iterable<T>,
+  settings: PMap.Options,
+  messager?: (p: T) => { message: string; color?: Color } | string
+) => {
+  const spinner = ora({
+    spinner: "dots8Bit",
+  });
+
+  return async <Z>(map: (params: T) => Promise<Z>) => {
+    const mapWrapper = async (params: T): Promise<Z> => {
+      const res = await map(params);
+      if (messager) {
+        const tmp = messager(params);
+        if (typeof tmp === "string") spinner.text = tmp;
+        else {
+          const { message, color } = tmp;
+          spinner.text = message;
+          spinner.color = color;
+        }
+      }
+
+      return res;
+    };
+
+    const res = (await pMap(p, mapWrapper, settings)) as Z[];
+    return res;
+  };
 };

@@ -3,3 +3,5 @@ export interface CopyFilesConfig {
   dest: string;
   isDir: boolean;
 }
+
+export type InferPromise<T> = T extends Promise<infer U> ? U : T;

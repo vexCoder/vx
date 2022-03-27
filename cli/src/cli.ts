@@ -32,7 +32,7 @@ class Cli {
     throw new VError("These are the allowed commands:%s%s%s", ...padded);
   }
 
-  async main(args?: string[]) {
+  async main(args: string[] = []) {
     this.cli = Utils.getCli(...args);
     if (!Command.isCommand(this.cli.command)) {
       this.printCommand();

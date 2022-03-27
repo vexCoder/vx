@@ -1,12 +1,27 @@
-import { join } from "path";
+import { join, dirname } from "path";
 import VError from "verror";
 import fs from "fs-extra";
 import { PackageJson } from "type-fest";
+import * as PMap from "p-map";
 import Operation from "./operation.js";
-import { Commands, OpSettings, GenerateProxy } from "../types/index.js";
-import { directoryTraversal, getCliRoot, getProjectRoot } from "../utils.js";
+import {
+  Commands,
+  OpSettings,
+  GenerateProxy,
+  CopyFilesConfig,
+} from "../types/index.js";
+import {
+  directoryTraversal,
+  getCliRoot,
+  getProjectRoot,
+  setPkg,
+  spinnerBuilder,
+} from "../utils.js";
 
 class GenerateOperation extends Operation<Commands.generate> {
+  private filesCopied: string[] = [];
+  private filesRollBacked: string[] = [];
+
   constructor(cli: OpSettings) {
     super(Commands.generate, cli);
   }
@@ -81,93 +96,67 @@ class GenerateOperation extends Operation<Commands.generate> {
     this.proxy.name = name;
   }
 
-  private async getTemplateFiles() {
+  private async getTemplateFiles(): Promise<CopyFilesConfig[]> {
     const { template, destination } = this.values;
     const matchGlob = (await fs.readFile(join(template, ".vxmatch"), "utf8"))
       .split("\n")
       .map((v) => v.trim());
 
-    return (
-      await directoryTraversal(template, matchGlob, async (v, dir) => ({
-        src: join(dir, v),
-        dest: join(destination, v),
-        isDir: (await fs.stat(join(dir, v))).isDirectory(),
-      }))
-    ).sort((a, b) => {
+    const map = async (v, dir) => ({
+      src: join(dir, v),
+      dest: join(destination, v),
+      isDir: (await fs.stat(join(dir, v))).isDirectory(),
+    });
+
+    const files = await directoryTraversal(template, matchGlob, map, {
+      onlyFiles: true,
+    });
+
+    return files.sort((a, b) => {
       if (a.isDir === b.isDir) return 0;
       if (a.isDir) return -1;
       return 1;
     });
   }
 
-  private filesCopied: string[] = [];
-  private filesRollBacked: string[] = [];
-
-  private async rollBack() {
-    const removed = [];
-    await Promise.all(
-      this.filesCopied.map(async (v) => {
-        const exists = await fs.pathExists(v);
-        if (exists) {
-          await fs.remove(v);
-          this.filesRollBacked.push(v);
-          removed.push(v);
-        }
-      })
-    );
-
-    return removed;
+  private async updateDestPkg(partial: Partial<PackageJson> = {}) {
+    setPkg(this.values.destination, {
+      ...partial,
+    });
   }
 
-  private async moveFiles() {
-    const files = await this.getTemplateFiles();
-    const copies = [];
-    await Promise.all(
-      files.map(async (v) => {
-        const { src, dest, isDir } = v;
-        const exists = await fs.pathExists(dest);
-        if (exists) {
-          throw new VError(`File ${dest} already exists`);
-        } else if (isDir) {
-          await fs.mkdir(dest);
-        } else {
-          await fs.copyFile(src, dest);
-        }
-        this.filesCopied.push(dest);
-        copies.push(dest);
-      })
-    );
-
-    return copies;
-  }
-
-  private async createDirIfNotExists(path: string) {
-    const exists = await fs.pathExists(path);
-    if (!exists) await fs.mkdir(path);
-  }
-
-  private async updateDestPkg(partial: Partial<PackageJson>) {
-    const pkg = join(this.values.destination, "package.json");
-    const exists = await fs.pathExists(pkg);
-    if (!exists) {
-      throw new VError("No package.json found");
+  private async rollBack(v: string) {
+    const exists = await fs.pathExists(v);
+    if (exists) {
+      await fs.remove(v);
     }
 
-    const json = await fs.readJson(pkg);
-    const updated = { ...json, ...partial };
-    await fs.writeJson(pkg, updated, { spaces: 2 });
+    return v;
+  }
+
+  private async moveFile(v: CopyFilesConfig) {
+    const { src, dest } = v;
+    await fs.mkdirp(dirname(dest));
+    await fs.copy(src, dest);
+
+    return dest;
   }
 
   async process() {
-    const { destination, workspace } = this.values;
+    const settings: PMap.Options = { concurrency: this.cli.concurrency ?? 1 };
 
     try {
-      await this.createDirIfNotExists(workspace);
-      await this.createDirIfNotExists(destination);
-      await this.moveFiles();
+      const files = await this.getTemplateFiles();
+      const spinner = spinnerBuilder(files, settings, (v) => `Copied ${v}`);
+      this.filesCopied = await spinner(this.moveFile);
       await this.updateDestPkg({ name: this.values.name });
     } catch (error) {
-      await this.rollBack();
+      const spinner = spinnerBuilder(
+        this.filesCopied,
+        settings,
+        (v) => `Rolled-back ${v}`
+      );
+      this.filesRollBacked = await spinner(this.rollBack);
       console.error(error);
     }
   }

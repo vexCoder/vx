@@ -30,8 +30,6 @@ export const createTestDir = async (
   const testDirExists = await fs.pathExists(testDir);
   if (testDirExists && options?.removeDir) {
     await fs.remove(testDir);
-  } else if (testDirExists) {
-    throw new Error("Directory already exists");
   }
 
   await fs.mkdirp(testDir);
@@ -41,7 +39,7 @@ export const createTestDir = async (
     await fs.writeJSON(pkgPath, {
       name,
       workspaces: ["packages/*"],
-      ...options.pkg,
+      ...(options?.pkg || []),
     } as PackageJson);
   }
 

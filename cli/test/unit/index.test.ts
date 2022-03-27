@@ -16,10 +16,6 @@ test.before(async (t) => {
   });
 });
 
-test.after.always(async (t) => {
-  await t.context.root.delete();
-});
-
 test("set root", async (t) => {
   const cli = new Cli(t.context.root.dir);
   t.is(cli.root, t.context.root.dir);

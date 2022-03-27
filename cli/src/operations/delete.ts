@@ -41,7 +41,7 @@ class DeleteOperation extends Operation<Commands.delete> {
       throw new VError("App is locked");
     }
 
-    const files = await this.getFiles();
+    const files = await this.getFiles(path);
     if (
       files.length &&
       !files.filter((v) => v.path.indexOf(path) === 0).length
@@ -52,7 +52,7 @@ class DeleteOperation extends Operation<Commands.delete> {
     this.values.path = path;
   }
 
-  public async prompt(cli?: OverrideSettings) {
+  public async prompt(override?: OverrideSettings) {
     if (!this.appsWithPath.length) {
       throw new VError("No apps found");
     }
@@ -61,7 +61,7 @@ class DeleteOperation extends Operation<Commands.delete> {
       apps: this.appsWithPath,
     });
 
-    const name = cli?.name ?? this.cli.name ?? answers.app;
+    const name = override?.name ?? this.cli.name ?? answers.app;
     const findApp = this.appsWithPath.find((v) => v.name === name);
 
     this.proxy.path = findApp?.path;
@@ -80,9 +80,9 @@ class DeleteOperation extends Operation<Commands.delete> {
       throw new Error("App does not exist");
   }
 
-  async getFiles() {
+  async getFiles(path?: string) {
     const paths = await directoryTraversal(
-      this.values.path,
+      path ?? this.values.path,
       ["./**/*"],
       async (v, dir) => ({
         name: v,
@@ -93,7 +93,7 @@ class DeleteOperation extends Operation<Commands.delete> {
     return paths;
   }
 
-  async deleteMapper(file: DeleteMapperParams) {
+  async deleteFile(file: DeleteMapperParams) {
     const result = await new Promise<DeleteMapperParams>((resolve, reject) => {
       rimraf(file.path, (err) => {
         if (err) reject(err);
@@ -109,7 +109,7 @@ class DeleteOperation extends Operation<Commands.delete> {
 
   async deleteFiles() {
     const paths = await this.getFiles();
-    const deleted = await pMap(paths, this.deleteMapper, {
+    const deleted = await pMap(paths, this.deleteFile, {
       concurrency: this.cli.concurrency,
     });
 
