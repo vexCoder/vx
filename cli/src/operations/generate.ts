@@ -3,7 +3,7 @@ import VError from "verror";
 import fs from "fs-extra";
 import { PackageJson } from "type-fest";
 import Operation from "./operation.js";
-import { Commands, OpSettings } from "../types/index.js";
+import { Commands, OpSettings, GenerateProxy } from "../types/index.js";
 import { directoryTraversal, getCliRoot, getProjectRoot } from "../utils.js";
 
 class GenerateOperation extends Operation<Commands.generate> {
@@ -11,32 +11,27 @@ class GenerateOperation extends Operation<Commands.generate> {
     super(Commands.generate, cli);
   }
 
-  public async verify() {
-    const { template, name, workspace = "root" } = this.cli;
+  public async verify(options?: GenerateProxy) {
+    const template = options?.template ?? this.tmp.template;
+    const name = options?.name ?? this.tmp.name;
+    const destination = options?.destination ?? this.tmp.destination;
+    const workspace = options?.workspace ?? this.tmp.workspace;
+    const isRoot = options?.isRoot ?? this.tmp.isRoot;
 
-    const templatePath = join(getCliRoot(), "templates", template);
-
-    const root = this.root ?? getProjectRoot();
-    const isRoot = workspace === "root" && !this.workspaces.includes("root");
-    const workspacePath = isRoot ? root : join(root, workspace || ".");
-
-    const destinationPath = join(workspacePath, name || "");
-
-    const templateExists = await fs.pathExists(templatePath);
+    const templateExists = await fs.pathExists(template);
 
     if (!this.templates.includes(template) && !templateExists) {
       throw new VError("Template does not exist");
     }
 
     const nameMatch = /[^a-z_-]/g.test(name || "");
-    if (!nameMatch && typeof name === "string" && name.length <= 3) {
+    if (nameMatch || name.length <= 2) {
       throw new VError(
         "Name must be lowercase, no spaces, no special characters, and at least 3 characters long"
       );
     }
 
-    const workspaceExists = await fs.pathExists(workspacePath);
-    if (workspaceExists && !isRoot && !this.workspaces.includes(workspace)) {
+    if (!isRoot && !this.workspaces.includes(workspace)) {
       throw new VError("Workspace does not exist");
     }
 
@@ -44,19 +39,17 @@ class GenerateOperation extends Operation<Commands.generate> {
       throw new VError(`App ${name} already exists`);
     }
 
-    const destinationExists = await fs.pathExists(destinationPath);
+    const destinationExists = await fs.pathExists(destination);
     if (destinationExists) {
-      const destinationFiles = await fs.readdir(destinationPath);
+      const destinationFiles = await fs.readdir(destination);
       if (destinationFiles.length)
         throw new VError(`Destination directory has files in it`);
     }
 
-    this.updateValues = {
-      workspace: workspacePath,
-      template: templatePath,
-      destination: destinationPath,
-      name,
-    };
+    this.values.template = template;
+    this.values.destination = destination;
+    this.values.workspace = workspace;
+    this.values.name = name;
   }
 
   public async prompt() {
@@ -73,11 +66,19 @@ class GenerateOperation extends Operation<Commands.generate> {
 
     const name = this.cli.name || answers.name;
 
-    this.updateCli = {
-      template,
-      workspace,
-      name,
-    };
+    const templatePath = join(getCliRoot(), "templates", template);
+
+    const root = this.root ?? getProjectRoot();
+    const isRoot = workspace === "root" && !this.workspaces.includes("root");
+    const workspacePath = isRoot ? root : join(root, workspace || ".");
+
+    const destinationPath = join(workspacePath, name || "");
+
+    this.tmp.template = templatePath;
+    this.tmp.workspace = workspace;
+    this.tmp.destination = destinationPath;
+    this.tmp.isRoot = isRoot;
+    this.tmp.name = name;
   }
 
   private async getTemplateFiles() {

@@ -8,8 +8,9 @@ import VError from "verror";
 import {
   Commands,
   DeleteMapperParams,
-  DeleteValues,
+  DeleteProxy,
   OpSettings,
+  OverrideSettings,
 } from "../types/index.js";
 import { getPkg } from "../utils.js";
 import Operation from "./operation.js";
@@ -23,31 +24,36 @@ class DeleteOperation extends Operation<Commands.delete> {
     return fs.pathExists(join(p ?? this.values.path, ".unlock"));
   }
 
-  public async verify(options?: DeleteValues) {
+  public async verify(options?: DeleteProxy) {
     const path = options?.path ?? this.tmp.path;
+    const name = options?.name ?? this.tmp.name;
 
-    if (!(await fs.pathExists(path))) {
-      throw new VError("Path does not exist");
+    if (!path || !(await fs.pathExists(path || "."))) {
+      throw new VError("Invalid path");
     }
 
     const app = this.appsWithPath.find((v) => v.path === path);
-    if ((path && !app) || !app.path) {
-      throw new VError("App does not exist");
-    }
-
-    const pkg = await getPkg(app.path);
-    if (!pkg || (pkg && pkg.name !== this.tmp.name) || !this.tmp.name) {
-      throw new VError("Directory is not an app");
+    const pkg = await getPkg(app?.path);
+    if (!name || !app?.path || !pkg || pkg?.name !== name) {
+      throw new VError("App is invalid");
     }
 
     if (!(await this.isUnlock(path))) {
       throw new VError("App is locked");
     }
 
+    const files = await this.getFiles();
+    if (
+      files.length &&
+      !files.filter((v) => v.path.indexOf(path) === 0).length
+    ) {
+      throw new VError("Files are not in app");
+    }
+
     this.values.path = path;
   }
 
-  public async prompt() {
+  public async prompt(cli?: OverrideSettings) {
     if (!this.appsWithPath.length) {
       throw new VError("No apps found");
     }
@@ -56,12 +62,11 @@ class DeleteOperation extends Operation<Commands.delete> {
       apps: this.appsWithPath,
     });
 
-    const name = this.cli.name ?? answers.app;
-
+    const name = cli?.name ?? this.cli.name ?? answers.app;
     const findApp = this.appsWithPath.find((v) => v.name === name);
 
     this.tmp.path = findApp?.path;
-    this.tmp.name = name;
+    this.tmp.name = findApp?.name;
   }
 
   async checkApp() {

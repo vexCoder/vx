@@ -21,7 +21,8 @@ export const setRoot = (path?: string) => {
   throw new VError("Invalid path");
 };
 
-export const getPkg = (path: string) => {
+export const getPkg = (path?: string) => {
+  if (!path) return;
   const pkgPath = join(path, "package.json");
   if (!fs.pathExistsSync(pkgPath)) return;
   const pkg = fs.readJSONSync(pkgPath);

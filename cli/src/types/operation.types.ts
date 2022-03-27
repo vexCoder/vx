@@ -7,6 +7,8 @@ export interface CliSettings {
   concurrency?: number;
 }
 
+export type OverrideSettings = Omit<CliSettings, "command">;
+
 export enum Commands {
   generate = "generate",
   delete = "delete",
@@ -22,11 +24,14 @@ export interface GenerateValues {
   template: string;
   destination: string;
   name: string;
-  isRoot: boolean;
 }
 
 export interface GenerateProxy {
-  workspace: string;
+  workspace?: string;
+  template?: string;
+  destination?: string;
+  name?: string;
+  isRoot?: boolean;
 }
 
 export interface DeleteValues {
@@ -37,16 +42,27 @@ export interface DeleteProxy {
   name?: string;
 }
 
+export interface InitValues {
+  path: string;
+}
+export interface InitProxy {
+  path?: string;
+}
+
 export type Proxy<T extends Commands> = T extends Commands.generate
   ? GenerateProxy
   : T extends Commands.delete
   ? DeleteProxy
+  : T extends Commands.init
+  ? InitProxy
   : object;
 
 export type Values<T extends Commands> = T extends Commands.generate
   ? GenerateValues
   : T extends Commands.delete
   ? DeleteValues
+  : T extends Commands.init
+  ? InitValues
   : object;
 
 export type VerifiedValues<T extends Commands> = BaseValues<T> & Values<T>;

@@ -1,9 +1,5 @@
 {
     "extends": "../../tsconfig.base.json",
-	"compilerOptions": {
-		"module": "ES2020",
-		"moduleResolution": "node"
-	},
 	"include": ["**/*.ts", "../src/**/*.ts", "../node_modules/@types/verror/index.d.ts"],
 	"exclude": []
 }

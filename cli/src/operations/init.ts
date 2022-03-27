@@ -3,7 +3,7 @@ import VError from "verror";
 import { Commands, OpSettings } from "../types/index.js";
 import Operation from "./operation.js";
 
-class InitCommand extends Operation<Commands.init> {
+class InitOperation extends Operation<Commands.init> {
   constructor(cli: OpSettings) {
     super(Commands.init, cli);
   }
@@ -27,4 +27,4 @@ class InitCommand extends Operation<Commands.init> {
   }
 }
 
-export default InitCommand;
+export default InitOperation;

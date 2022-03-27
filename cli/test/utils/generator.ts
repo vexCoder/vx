@@ -5,10 +5,12 @@ import { PackageJson } from "type-fest";
 import DeleteOperation from "../../src/operations/delete.js";
 import GenerateOperation from "../../src/operations/generate.js";
 import { getCli } from "../../src/utils.js";
-import { getCliRoot } from "./utils.js";
+import { getTestDir } from "./utils.js";
+import InitOperation from "../../src/operations/init.js";
 
 interface CreateTestDirOptions {
   removeDir?: boolean;
+  removePkg?: boolean;
   pkg?: PackageJson;
 }
 
@@ -22,7 +24,7 @@ export const createTestDir = async (
   name: string,
   options?: CreateTestDirOptions
 ): Promise<CreateTestDirValue> => {
-  const path = getCliRoot();
+  const path = getTestDir();
   const testDir = join(path, name);
   const testDirExists = await fs.pathExists(testDir);
   if (testDirExists && options?.removeDir) {
@@ -31,14 +33,16 @@ export const createTestDir = async (
     throw new Error("Directory already exists");
   }
 
-  await fs.mkdir(testDir);
+  await fs.mkdirp(testDir);
 
   const pkgPath = join(testDir, "package.json");
-  await fs.writeJSON(pkgPath, {
-    name,
-    workspaces: ["packages/*"],
-    ...options.pkg,
-  } as PackageJson);
+  if (!options?.removePkg) {
+    await fs.writeJSON(pkgPath, {
+      name,
+      workspaces: ["packages/*"],
+      ...options.pkg,
+    } as PackageJson);
+  }
 
   return {
     dir: testDir,
@@ -55,7 +59,7 @@ const convertObjectToParams = <T extends {}>(obj: T) => {
   return Object.entries(obj).map(([k, v]) => `--${k}=${v}`);
 };
 
-interface DeleteOpParams {
+export interface DeleteOpParams {
   root?: string;
   name?: string;
   useDefault?: boolean;
@@ -73,7 +77,7 @@ export const testDelete = (options: DeleteOpParams = {}) => {
   return op;
 };
 
-interface GenerateOpParams {
+export interface GenerateOpParams {
   root?: string;
   name?: string;
   template?: string;
@@ -93,20 +97,44 @@ export const testGenerate = (options: GenerateOpParams = {}) => {
   return op;
 };
 
+export interface InitOpParams {
+  root?: string;
+  useDefault?: boolean;
+  disableConfirm?: boolean;
+}
+
+export const testInit = (options: InitOpParams = {}) => {
+  const params = _.omit(options, ["root"]);
+  const cli = getCli("generate", ...convertObjectToParams(params));
+  const op = new InitOperation({
+    ...cli,
+    root: options.root,
+    useDefault: options.useDefault ?? true,
+    disableConfirm: options.disableConfirm ?? true,
+  });
+
+  return op;
+};
+
 export const getPkg = async (path: string) => {
   const pkgPath = join(path, "package.json");
+  if (!(await fs.pathExists(pkgPath))) return {};
   return (await fs.readJSON(pkgPath)) as PackageJson;
 };
 
 export const createPkg = async (path: string, pkg: Partial<PackageJson>) => {
   const json = await getPkg(path);
 
-  fs.writeJSON(join(path, "package.json"), {
+  await fs.writeJSON(join(path, "package.json"), {
     ...json,
     ...pkg,
   });
 
   return path;
+};
+
+export const unlockApp = async (path: string) => {
+  await fs.writeFile(join(path, ".unlock"), "");
 };
 
 export const createApp = async (
@@ -115,10 +143,27 @@ export const createApp = async (
   options: PackageJson = {}
 ) => {
   const appPath = join(path, name);
-  await fs.mkdir(appPath);
+  await fs.mkdirp(appPath);
   await createPkg(appPath, {
     name,
     ...options,
   });
+  return appPath;
+};
+
+export const createUnlockedApp = async (
+  name: string,
+  path: string,
+  options: PackageJson = {}
+) => {
+  const appPath = await createApp(name, path, options);
+  await unlockApp(appPath);
+  return appPath;
+};
+
+export const createEmptyFolder = async (name: string, path: string) => {
+  const appPath = join(path, name);
+  await fs.mkdirp(appPath);
+  await unlockApp(appPath);
   return appPath;
 };

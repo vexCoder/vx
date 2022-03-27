@@ -60,13 +60,6 @@ abstract class Operation<T extends Commands> {
     return step[this.values.command] as typeof step[T];
   }
 
-  set updateValues(partial: Partial<VerifiedValues<T>>) {
-    this.tmp = {
-      ...this.tmp,
-      ...partial,
-    };
-  }
-
   public abstract process(): Promise<void>;
   public abstract verify(): void;
   public abstract prompt(): void;

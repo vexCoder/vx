@@ -9,6 +9,8 @@ export const getCurrentPath = () =>
 export const getCliRoot = () =>
   join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
+export const getTestDir = () => join(getCliRoot(), ".test");
+
 export const makeSampleDir = async () => {
   const path = getCurrentPath();
   const sampleDir = join(path, "sample");
@@ -22,4 +24,11 @@ export const makeSampleDir = async () => {
 
 export const readPkg = async (dir: string) => {
   return fs.readJSON(dir) as PackageJson;
+};
+
+export const getTemplates = async () => {
+  return (await fs.readdir(join(getCliRoot(), "..", "templates"))).map((v) => ({
+    name: v,
+    dir: join(getCliRoot(), "..", "templates", v),
+  }));
 };
