@@ -1,6 +1,5 @@
 import consola from "consola";
 import fs from "fs-extra";
-import { globby } from "globby";
 import pMap from "p-map";
 import { join } from "path";
 import rimraf from "rimraf";
@@ -12,7 +11,7 @@ import {
   OpSettings,
   OverrideSettings,
 } from "../types/index.js";
-import { getPkg } from "../utils.js";
+import { directoryTraversal, getPkg } from "../utils.js";
 import Operation from "./operation.js";
 
 class DeleteOperation extends Operation<Commands.delete> {
@@ -82,14 +81,14 @@ class DeleteOperation extends Operation<Commands.delete> {
   }
 
   async getFiles() {
-    const paths = (
-      await globby(["./**/*"], {
-        cwd: this.values.path,
-        dot: true,
-        absolute: true,
-        objectMode: true,
+    const paths = await directoryTraversal(
+      this.values.path,
+      ["./**/*"],
+      async (v, dir) => ({
+        name: v,
+        path: join(dir, v),
       })
-    ).map((v) => ({ name: v.name, path: v.path }));
+    );
 
     return paths;
   }

@@ -87,13 +87,17 @@ class GenerateOperation extends Operation<Commands.generate> {
       .split("\n")
       .map((v) => v.trim());
 
-    return (await directoryTraversal(template, destination, matchGlob)).sort(
-      (a, b) => {
-        if (a.isDir === b.isDir) return 0;
-        if (a.isDir) return -1;
-        return 1;
-      }
-    );
+    return (
+      await directoryTraversal(template, matchGlob, async (v, dir) => ({
+        src: join(dir, v),
+        dest: join(destination, v),
+        isDir: (await fs.stat(join(dir, v))).isDirectory(),
+      }))
+    ).sort((a, b) => {
+      if (a.isDir === b.isDir) return 0;
+      if (a.isDir) return -1;
+      return 1;
+    });
   }
 
   private filesCopied: string[] = [];

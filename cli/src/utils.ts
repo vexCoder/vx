@@ -1,13 +1,12 @@
+import fg from "fast-glob";
 import fs from "fs-extra";
 import _ from "lodash";
 import meow from "meow";
 import { dirname, join, normalize } from "path";
-import VError from "verror";
-import { fileURLToPath } from "url";
-import fg from "fast-glob";
 import { PackageJson } from "type-fest";
+import { fileURLToPath } from "url";
+import VError from "verror";
 import { CliSettings } from "./types/index.js";
-import { CopyFilesConfig } from "./types/utils.types.js";
 
 export const setRoot = (path?: string) => {
   const newRoot = path ? normalize(path) : process.cwd();
@@ -236,10 +235,10 @@ export const getWorkspaceApps = (nroot?: string, workspace?: string) => {
   return [];
 };
 
-export const directoryTraversal = async (
+export const directoryTraversal = async <T>(
   path: string,
-  destination: string,
-  matcher: string[] = []
+  matcher: string[],
+  callback: (file: string, dir: string) => Promise<T>
 ) => {
   const files = await fg(matcher, {
     cwd: path,
@@ -248,23 +247,24 @@ export const directoryTraversal = async (
     markDirectories: true,
   });
 
-  const filesToCopy: CopyFilesConfig[] = await Promise.all(
-    files.map(async (v) => ({
-      src: join(path, v),
-      dest: join(destination, v),
-      isDir: (await fs.stat(join(path, v))).isDirectory(),
-    }))
+  const filesToCopy: T[] = await Promise.all(
+    files.map(async (v) => callback(v, path))
   );
 
   return filesToCopy;
 };
 
 export const getInitFiles = async (destination: string) => {
-  const dir = join(getCliRoot(), "init");
-  const files = await directoryTraversal(dir, destination, [
-    "**/*",
-    "!**/node_modules/**",
-  ]);
+  const root = join(getCliRoot(), "init");
+  const files = await directoryTraversal(
+    root,
+    ["**/*", "!**/node_modules/**"],
+    async (v, dir) => ({
+      src: join(dir, v),
+      dest: join(destination, v),
+      isDir: (await fs.stat(join(dir, v))).isDirectory(),
+    })
+  );
 
   return files;
 };
