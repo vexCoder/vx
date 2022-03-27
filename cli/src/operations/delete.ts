@@ -25,8 +25,8 @@ class DeleteOperation extends Operation<Commands.delete> {
   }
 
   public async verify(options?: DeleteProxy) {
-    const path = options?.path ?? this.tmp.path;
-    const name = options?.name ?? this.tmp.name;
+    const path = options?.path ?? this.proxy.path;
+    const name = options?.name ?? this.proxy.name;
 
     if (!path || !(await fs.pathExists(path || "."))) {
       throw new VError("Invalid path");
@@ -65,8 +65,8 @@ class DeleteOperation extends Operation<Commands.delete> {
     const name = cli?.name ?? this.cli.name ?? answers.app;
     const findApp = this.appsWithPath.find((v) => v.name === name);
 
-    this.tmp.path = findApp?.path;
-    this.tmp.name = findApp?.name;
+    this.proxy.path = findApp?.path;
+    this.proxy.name = findApp?.name;
   }
 
   async checkApp() {

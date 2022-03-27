@@ -29,6 +29,16 @@ export const getPkg = (path?: string) => {
   return pkg as PackageJson;
 };
 
+export const setPkg = (path?: string, values: Partial<PackageJson> = {}) => {
+  if (!path) return;
+  let pkg = getPkg(path) ?? {};
+  const newPkg = _.merge(pkg, values);
+  fs.writeJSONSync(join(path, "package.json"), newPkg, { spaces: 2 });
+  pkg = getPkg(path);
+  if (!pkg) return;
+  return pkg as PackageJson;
+};
+
 export const getProjectRoot = (r?: string) => {
   let root = "";
   let tmp = r ?? process.cwd();
@@ -247,4 +257,14 @@ export const directoryTraversal = async (
   );
 
   return filesToCopy;
+};
+
+export const getInitFiles = async (destination: string) => {
+  const dir = join(getCliRoot(), "init");
+  const files = await directoryTraversal(dir, destination, [
+    "**/*",
+    "!**/node_modules/**",
+  ]);
+
+  return files;
 };

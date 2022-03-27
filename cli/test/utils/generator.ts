@@ -18,6 +18,7 @@ export type CreateTestDirValue = {
   dir: string;
   pkg: () => Promise<PackageJson>;
   delete: () => Promise<void>;
+  name: string;
 };
 
 export const createTestDir = async (
@@ -52,6 +53,7 @@ export const createTestDir = async (
     delete: async () => {
       await fs.remove(testDir);
     },
+    name,
   };
 };
 

@@ -12,11 +12,11 @@ class GenerateOperation extends Operation<Commands.generate> {
   }
 
   public async verify(options?: GenerateProxy) {
-    const template = options?.template ?? this.tmp.template;
-    const name = options?.name ?? this.tmp.name;
-    const destination = options?.destination ?? this.tmp.destination;
-    const workspace = options?.workspace ?? this.tmp.workspace;
-    const isRoot = options?.isRoot ?? this.tmp.isRoot;
+    const template = options?.template ?? this.proxy.template;
+    const name = options?.name ?? this.proxy.name;
+    const destination = options?.destination ?? this.proxy.destination;
+    const workspace = options?.workspace ?? this.proxy.workspace;
+    const isRoot = options?.isRoot ?? this.proxy.isRoot;
 
     const templateExists = await fs.pathExists(template);
 
@@ -74,11 +74,11 @@ class GenerateOperation extends Operation<Commands.generate> {
 
     const destinationPath = join(workspacePath, name || "");
 
-    this.tmp.template = templatePath;
-    this.tmp.workspace = workspace;
-    this.tmp.destination = destinationPath;
-    this.tmp.isRoot = isRoot;
-    this.tmp.name = name;
+    this.proxy.template = templatePath;
+    this.proxy.workspace = workspace;
+    this.proxy.destination = destinationPath;
+    this.proxy.isRoot = isRoot;
+    this.proxy.name = name;
   }
 
   private async getTemplateFiles() {

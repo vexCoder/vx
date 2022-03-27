@@ -149,7 +149,7 @@ test("get generate steps", async (t) => {
   });
 
   await op.prompt();
-  t.deepEqual(op.tmp, {
+  t.deepEqual(op.proxy, {
     name: "test-app",
     isRoot: false,
     destination: join(project.dir, "packages", "test-app"),

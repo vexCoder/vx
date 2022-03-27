@@ -7,6 +7,7 @@ import {
   Settings,
   VerifiedValues,
   Proxy,
+  OverrideSettings,
 } from "../types/index.js";
 import {
   getTemplateList,
@@ -19,7 +20,7 @@ abstract class Operation<T extends Commands> {
   public root: string;
   public cli: CliSettings;
   public values: VerifiedValues<T> = {} as VerifiedValues<T>;
-  public tmp: Proxy<T> = {} as Proxy<T>;
+  public proxy: Proxy<T> = {} as Proxy<T>;
   public override: Settings = {};
 
   get templates() {
@@ -61,8 +62,8 @@ abstract class Operation<T extends Commands> {
   }
 
   public abstract process(): Promise<void>;
-  public abstract verify(): void;
-  public abstract prompt(): void;
+  public abstract verify(override?: Proxy<T>): void;
+  public abstract prompt(override?: OverrideSettings): void;
 
   constructor(command: T, settings: OpSettings) {
     const { useDefault, disableConfirm, root, ...cli } = settings;

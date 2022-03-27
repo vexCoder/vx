@@ -5,6 +5,7 @@ export interface CliSettings {
   workspace?: string;
   confirm?: boolean;
   concurrency?: number;
+  root?: string;
 }
 
 export type OverrideSettings = Omit<CliSettings, "command">;
@@ -44,9 +45,11 @@ export interface DeleteProxy {
 
 export interface InitValues {
   path: string;
+  name: string;
 }
 export interface InitProxy {
   path?: string;
+  name?: string;
 }
 
 export type Proxy<T extends Commands> = T extends Commands.generate
