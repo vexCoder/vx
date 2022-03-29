@@ -7,7 +7,7 @@ import {
   OpSettings,
   OverrideSettings,
   InitProxy,
-  CopyFilesConfig,
+  FileConfig,
 } from "../types/index.js";
 import Operation from "./operation.js";
 import { getInitFiles, getPkg, setPkg } from "../utils.js";
@@ -39,7 +39,7 @@ class InitOperation extends Operation<Commands.init> {
     this.proxy.name = basename(root);
   }
 
-  public async copyFile(config: CopyFilesConfig) {
+  public async copyFile(config: FileConfig) {
     await fs.copy(config.src, config.dest);
   }
 

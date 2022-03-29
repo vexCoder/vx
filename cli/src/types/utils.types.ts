@@ -1,6 +1,7 @@
 import * as Pmap from "p-map";
 
-export interface CopyFilesConfig {
+export interface FileConfig {
+  name: string;
   src: string;
   dest: string;
   isDir: boolean;

@@ -4,10 +4,10 @@ import {
   CliSettings,
   Commands,
   OpSettings,
+  OverrideSettings,
+  Proxy,
   Settings,
   VerifiedValues,
-  Proxy,
-  OverrideSettings,
 } from "../types/index.js";
 import {
   getTemplateList,

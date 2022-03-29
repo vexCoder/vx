@@ -1,23 +1,27 @@
-import consola from "consola";
+/* eslint-disable @typescript-eslint/no-shadow */
 import fs from "fs-extra";
-import { Listr } from "listr2";
-import * as PMap from "p-map";
+import pMap, * as PMap from "p-map";
 import { dirname, join } from "path";
 import VError from "verror";
-import { Commands, GenerateProxy, OpSettings } from "../types/index.js";
+import {
+  Commands,
+  GenerateProxy,
+  OpSettings,
+  FileConfig,
+} from "../types/index.js";
 import {
   directoryTraversal,
   getCliRoot,
   getPkg,
   getProjectRoot,
-  iterableLoader,
   setPkg,
 } from "../utils.js";
 import Operation from "./operation.js";
+import TaskManager from "./taskManager.js";
 
 class GenerateOperation extends Operation<Commands.generate> {
-  private filesCopied: string[] = [];
-  private filesRollBacked: string[] = [];
+  private filesCopied: FileConfig[] = [];
+  private filesRollBacked: FileConfig[] = [];
 
   constructor(cli: OpSettings) {
     super(Commands.generate, cli);
@@ -118,23 +122,20 @@ class GenerateOperation extends Operation<Commands.generate> {
       onlyFiles: true,
     });
 
-    return files.sort((a, b) => {
-      if (a.isDir === b.isDir) return 0;
-      if (a.isDir) return -1;
-      return 1;
-    });
+    return files;
   }
 
-  private async rollBack(v: string) {
-    const exists = await fs.pathExists(v);
+  private rollBack = async (v: FileConfig) => {
+    const exists = await fs.pathExists(v.dest);
     if (exists) {
-      await fs.remove(v);
+      await fs.remove(v.dest);
+      this.filesRollBacked.push(v);
     }
 
     return v;
-  }
+  };
 
-  private async moveFile<T extends { src: string; dest: string }>(v: T) {
+  private moveFile = async (v: FileConfig) => {
     const { src, dest } = v;
     await new Promise<void>((resolve) => {
       setTimeout(() => {
@@ -143,9 +144,10 @@ class GenerateOperation extends Operation<Commands.generate> {
     });
     await fs.mkdirp(dirname(dest));
     await fs.copy(src, dest);
+    this.filesCopied.push(v);
 
-    return dest;
-  }
+    return v;
+  };
 
   private appendToWorkspace() {
     if (this.values.isRoot) {
@@ -167,80 +169,67 @@ class GenerateOperation extends Operation<Commands.generate> {
     }
   }
 
-  async process() {
-    const settings: PMap.Options = { concurrency: this.cli.concurrency ?? 1 };
+  process = async () => {
+    const settings: PMap.Options = {
+      concurrency: 1 ?? this.cli.concurrency ?? 1,
+    };
 
-    type ThisType = this;
-    interface TaskContext {
-      complete: boolean;
-      op: ThisType;
-    }
+    const files = await this.getTemplateFiles();
 
-    const tasks = new Listr<TaskContext>(
-      [
-        {
-          title: `Generating files: ${this.values.destination}`,
-          async task(_, task) {
-            return task.newListr([
-              {
-                title: "Copying",
-                task: async (ctx, copyTask) => {
-                  const files = await ctx.op.getTemplateFiles();
-                  await iterableLoader(files, {
-                    ...settings,
-                    map: ctx.op.moveFile,
-                    messager: (v) => {
-                      copyTask.title = `Copying: ${v.name}`;
-                    },
-                  });
-                  ctx.complete = true;
-                },
+    const task = TaskManager.register({
+      message: "Generating files",
+      fail: (_err, t) => {
+        t.push({
+          status: "error",
+          task: async (t) => {
+            t.setStatus("loading");
+            await pMap(
+              this.filesCopied,
+              async (v, i) => {
+                t.setMessage(`Rolling Back: ${v.name}`);
+                t.setProgress((i + 1) / this.filesCopied.length);
+                return await this.rollBack(v);
               },
-            ]);
-          },
-        },
-        {
-          title: `Setting up ${this.values.name}`,
-          skip: (ctx) => !ctx.complete,
-          task: (ctx) => {
-            this.appendToWorkspace();
-            setPkg(ctx.op.values.root, { name: ctx.op.values.name });
-          },
-        },
-        {
-          title: `Rolling back`,
-          enabled: (ctx) => ctx.complete || this.filesCopied.length === 0,
-          async task(_, task) {
-            return task.newListr([
-              {
-                title: "Copying",
-                task: async (ctx, roolbackTask) => {
-                  await iterableLoader(ctx.op.filesCopied, {
-                    ...settings,
-                    map: ctx.op.rollBack,
-                    messager: (v) => {
-                      roolbackTask.title = `Rolling back: ${v}`;
-                    },
-                  });
-                },
-              },
-            ]);
-          },
-        },
-      ],
-      {
-        concurrent: false,
-        ctx: { complete: false, op: this },
-      }
-    );
+              settings
+            );
 
-    try {
-      await tasks.run();
-      consola.success(`${this.values.name} App created successfully`);
-    } catch (error) {
-      consola.error(error);
-    }
-  }
+            await fs.remove(this.values.destination);
+            t.setStatus("success");
+          },
+        });
+      },
+    });
+
+    task.add({
+      status: "loading",
+      task: async (t) => {
+        t.setStatus("loading");
+        await pMap(
+          files,
+          async (v, i) => {
+            t.setMessage(`Copying: ${v.name}`);
+            t.setProgress((i + 1) / files.length);
+            return await this.moveFile(v);
+          },
+          settings
+        );
+        t.setStatus("success");
+      },
+    });
+
+    task.add({
+      message: `Setting up ${this.values.name}`,
+      status: "idle",
+      task: async (t) => {
+        t.setStatus("loading");
+        this.appendToWorkspace();
+        setPkg(this.values.root, { name: this.values.name });
+        t.setStatus("success");
+      },
+    });
+
+    await TaskManager.render([task]);
+  };
 }
 
 export default GenerateOperation;

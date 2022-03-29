@@ -46,7 +46,7 @@ class Cli {
     await operation.prompt();
     await operation.verify();
     await operation.process();
-
+    
     return operation;
   }
 }

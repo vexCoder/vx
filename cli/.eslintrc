@@ -1,7 +1,7 @@
 {
     "extends": [
-        "airbnb-base",
-        "airbnb-typescript/base",
+        "airbnb",
+        "airbnb-typescript",
         "../.eslintrc"
     ],
     "parserOptions": {
@@ -21,6 +21,14 @@
         "consistent-return": "off",
         "class-methods-use-this": "off",
         "@typescript-eslint/lines-between-class-members": "off",
-        "no-param-reassign": "off"
+        "no-param-reassign": "off",
+        "@typescript-eslint/return-await": "off",
+        "no-restricted-syntax": "off",
+        "no-await-in-loop": "off",
+        "@typescript-eslint/no-use-before-define": "off",
+        "react/require-default-props": "off",
+        "no-promise-executor-return": "off",
+        "@typescript-eslint/no-shadow": "off",
+        "react/jsx-props-no-spreading": "off"
     }
 }
