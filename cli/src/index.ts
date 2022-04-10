@@ -8,8 +8,6 @@ consola.wrapAll();
 
 const cli = new Cli();
 
-cli
-  .main()
-  .catch((err: Error) => {
-    console.error(`\n${err.stack?.replace("Error:", chalk.red("Error:"))}`);
-  });
+cli.main().catch((err: Error) => {
+  console.error(`\n${err.stack?.replace("Error:", chalk.red("Error:"))}`);
+});

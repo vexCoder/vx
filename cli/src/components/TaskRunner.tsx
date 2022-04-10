@@ -1,7 +1,7 @@
 import { render } from "ink";
 import React from "react";
 import { useSnapshot } from "valtio";
-import TaskData from "../operations/task.js";
+import TaskData from "../task/task.js";
 import Task from "./Task.js";
 
 interface TaskRunnerProps {

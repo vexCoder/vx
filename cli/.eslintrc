@@ -29,6 +29,7 @@
         "react/require-default-props": "off",
         "no-promise-executor-return": "off",
         "@typescript-eslint/no-shadow": "off",
-        "react/jsx-props-no-spreading": "off"
+        "react/jsx-props-no-spreading": "off",
+        "no-plusplus": "off"
     }
 }

@@ -1,18 +1,23 @@
+import { isPromise } from "util/types";
+
+export type Status = "idle" | "loading" | "success" | "error";
+
 export interface TaskApi {
-  push: (child: Task | TaskSetting) => void;
+  add: (child: Task | TaskSetting) => void;
+  setFail: (fn: (err: Error, api: TaskApi) => void | Promise<void>) => void;
   setMessage: (message: string) => void;
-  setStatus: (status: "idle" | "loading" | "success" | "error") => void;
-  setDescription: (description: string) => void;
-  setProgress: (progress: number) => void;
+  setStatus: (message: Status) => void;
+  setDescription: (message: string) => void;
+  setProgress: (message: number) => void;
 }
 export interface TaskSetting {
   message?: string;
   description?: string;
-  status?: "idle" | "loading" | "success" | "error";
+  status?: Status;
   progress?: number;
   children?: TaskSetting[];
+  fail?: (error: Error, api: TaskApi) => void | Promise<void>;
   task?: (params: TaskApi) => void | Promise<void>;
-  fail?: (err: Error, api: TaskApi) => void | Promise<void>;
 }
 
 class Task {
@@ -20,7 +25,7 @@ class Task {
   message?: string;
   description?: string;
   task?: (api: TaskApi) => void | Promise<void>;
-  status?: "idle" | "loading" | "success" | "error";
+  status?: Status;
   progress?: number;
   execution?: number;
   completed?: boolean;
@@ -58,21 +63,24 @@ class Task {
     return this;
   }
 
-  public functions() {
+  public functions(): TaskApi {
     return {
-      push: (child: Task | TaskSetting) => {
+      add(child: Task | TaskSetting) {
         this.add.call(this, child);
       },
-      setMessage: (msg: string) => {
+      setFail(fn: (error: Error, failApi: TaskApi) => void) {
+        this.fail = fn;
+      },
+      setMessage(msg: string) {
         this.message = msg;
       },
-      setStatus: (status) => {
+      setStatus(status: Status) {
         this.status = status;
       },
-      setDescription: (description: string) => {
+      setDescription(description: string) {
         this.description = description;
       },
-      setProgress: (progress: number) => {
+      setProgress(progress: number) {
         this.progress = progress;
       },
     };
@@ -85,26 +93,35 @@ class Task {
           const start = process.hrtime();
           await this.task(this.functions());
           const end = process.hrtime(start);
-          this.execution = end[0] + end[1] / 1000000000;
+          if (isPromise(this.task))
+            this.execution = end[0] + end[1] / 1000000000;
+
           this.completed = true;
+        }
+
+        for (const child of this.children) {
+          await child.run.call(child);
         }
       } catch (error) {
         this.completed = true;
         this.error = error.message;
+        if (this.parent && this.parent.children) {
+          for (let i = 0; i < this.parent.children.length; i++) {
+            const t = this.parent.children[i];
+            t.task = undefined;
+          }
+        }
 
         let node = this as Task;
         while (node) {
           node.status = "error";
-          if (node.fail) await node.fail.call(node, error, node.functions());
+          if (node.fail)
+            await node.fail.call(node, error, node.functions.call(node));
           node = node.parent;
         }
 
         await this.run();
       }
-    }
-
-    for (const child of this.children) {
-      await child.run();
     }
   }
 }

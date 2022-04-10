@@ -9,12 +9,9 @@ const main = async () => {
 
   const cli = new Cli(dir);
 
-  cli
-    .main()
-    .then(() => process.exit(0))
-    .catch((err: Error) => {
-      console.error(`\n${err.stack?.replace("Error:", chalk.red("Error:"))}`);
-    });
+  cli.main().catch((err: Error) => {
+    console.error(`\n${err.stack?.replace("Error:", chalk.red("Error:"))}`);
+  });
 };
 
 main();

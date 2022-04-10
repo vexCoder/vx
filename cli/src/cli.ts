@@ -32,7 +32,9 @@ class Cli {
     throw new VError("These are the allowed commands:%s%s%s", ...padded);
   }
 
-  async main(args: string[] = []) {
+  async main(
+    args: string[] = []
+  ): Promise<Command<Commands.generate | Commands.delete | Commands.init>> {
     this.cli = Utils.getCli(...args);
     if (!Command.isCommand(this.cli.command)) {
       this.printCommand();
@@ -46,7 +48,7 @@ class Cli {
     await operation.prompt();
     await operation.verify();
     await operation.process();
-    
+
     return operation;
   }
 }

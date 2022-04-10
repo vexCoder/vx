@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { normalize } from "path";
+import Task from "../task/task.js";
 import {
   CliSettings,
   Commands,
@@ -17,6 +18,7 @@ import {
 import getSteps from "./steps.js";
 
 abstract class Operation<T extends Commands> {
+  public tasks: Task[];
   public root: string;
   public cli: CliSettings;
   public values: VerifiedValues<T> = {} as VerifiedValues<T>;

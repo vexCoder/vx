@@ -17,7 +17,7 @@ import {
   setPkg,
 } from "../utils.js";
 import Operation from "./operation.js";
-import TaskManager from "./taskManager.js";
+import { render, task } from "../task/taskManager.js";
 
 class GenerateOperation extends Operation<Commands.generate> {
   private filesCopied: FileConfig[] = [];
@@ -174,61 +174,53 @@ class GenerateOperation extends Operation<Commands.generate> {
       concurrency: 1 ?? this.cli.concurrency ?? 1,
     };
 
-    const files = await this.getTemplateFiles();
+    const pipeline = task("Generating files", ({ task, taskFail }) => {
+      taskFail(({ task }) => {
+        task("Rolling back files", "loading", async (t) => {
+          t.setStatus("loading");
+          const files = this.filesCopied;
 
-    const task = TaskManager.register({
-      message: "Generating files",
-      fail: (_err, t) => {
-        t.push({
-          status: "error",
-          task: async (t) => {
-            t.setStatus("loading");
-            await pMap(
-              this.filesCopied,
-              async (v, i) => {
-                t.setMessage(`Rolling Back: ${v.name}`);
-                t.setProgress((i + 1) / this.filesCopied.length);
-                return await this.rollBack(v);
-              },
-              settings
-            );
+          await pMap(
+            files,
+            async (v, i) => {
+              t.setMessage(`Rolling Back: ${v.name}`);
+              t.setProgress((i + 1) / files.length);
+              return await this.rollBack(v);
+            },
+            settings
+          );
 
-            await fs.remove(this.values.destination);
-            t.setStatus("success");
-          },
+          await fs.remove(this.values.destination);
+          t.setStatus("success");
         });
-      },
-    });
+      });
 
-    task.add({
-      status: "loading",
-      task: async (t) => {
+      task("Copying", async (t) => {
+        const files = await this.getTemplateFiles();
+
         t.setStatus("loading");
         await pMap(
           files,
           async (v, i) => {
             t.setMessage(`Copying: ${v.name}`);
             t.setProgress((i + 1) / files.length);
+            if (i === files.length - 2) throw new Error("test");
             return await this.moveFile(v);
           },
           settings
         );
         t.setStatus("success");
-      },
-    });
+      });
 
-    task.add({
-      message: `Setting up ${this.values.name}`,
-      status: "idle",
-      task: async (t) => {
+      task(`Setting up ${this.values.name}`, async (t) => {
         t.setStatus("loading");
         this.appendToWorkspace();
         setPkg(this.values.root, { name: this.values.name });
         t.setStatus("success");
-      },
+      });
     });
 
-    await TaskManager.render([task]);
+    await render([pipeline]);
   };
 }
 
