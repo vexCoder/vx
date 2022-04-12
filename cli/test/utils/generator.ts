@@ -92,6 +92,7 @@ export const testGenerate = (options: GenerateOpParams = {}) => {
     ...cli,
     root: options.root,
     useDefault: options.useDefault ?? true,
+    confirm: false,
   });
 
   return op;

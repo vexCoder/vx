@@ -4,3 +4,4 @@ dist
 cli-test
 sample
 **/.test
+**/.turbo

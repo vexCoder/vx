@@ -56,7 +56,7 @@ abstract class Operation<T extends Commands> {
   get buildPrompt() {
     const step = getSteps({
       cli: this.cli,
-      disableConfirm: this.override?.disableConfirm || this.cli.confirm,
+      disableConfirm: this.override?.disableConfirm || !this.cli.confirm,
       useDefault: this.override?.useDefault,
     });
 

@@ -47,7 +47,7 @@ function Task({ task }: TaskProps) {
         )}
       </Box>
       {task.description && (
-        <Box marginLeft={task.level * 2} display="flex" alignItems="center">
+        <Box marginLeft={task.level * 2 + 2} display="flex" alignItems="center">
           <Text color="gray">{task.description}</Text>
         </Box>
       )}

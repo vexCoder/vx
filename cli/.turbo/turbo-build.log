@@ -1,4 +1,0 @@
-[35mcli:build: [0mcache hit, replaying output [2m4022a16ffeb031f7[0m
-[35mcli:build: [0m$ tsc && yarn templates && yarn initializer
-[35mcli:build: [0m$ rimraf dist/templates && cpy ../templates !../templates/**/node_modules dist/templates --parents --dot
-[35mcli:build: [0m$ rimraf dist/init && cpy ../init !../init/node_modules dist/init --parents --dot

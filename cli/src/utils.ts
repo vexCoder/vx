@@ -18,7 +18,7 @@ export const setRoot = (path?: string) => {
 
     return process.cwd();
   }
-  throw new VError("Invalid path");
+  throw new Error("Invalid path");
 };
 
 export const getPkg = (path?: string) => {
@@ -59,7 +59,7 @@ export const getProjectRoot = (r?: string) => {
     } else {
       const ntmp = join(tmp, "..");
       if (tmp === ntmp) {
-        throw new VError("Could not find project root");
+        throw new Error("Could not find project root");
       }
 
       tmp = ntmp;

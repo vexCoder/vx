@@ -1,17 +1,16 @@
 import fs from "fs-extra";
-import VError from "verror";
-import { basename } from "path";
 import pMap from "p-map";
+import { basename } from "path";
+import { render, task, TaskManagerApi } from "../task/taskManager.js";
 import {
   Commands,
+  FileConfig,
+  InitProxy,
   OpSettings,
   OverrideSettings,
-  InitProxy,
-  FileConfig,
 } from "../types/index.js";
-import Operation from "./operation.js";
 import { getInitFiles, getPkg, setPkg } from "../utils.js";
-import { render, task, TaskManagerApi } from "../task/taskManager.js";
+import Operation from "./operation.js";
 
 class InitOperation extends Operation<Commands.init> {
   constructor(cli: OpSettings) {
@@ -23,9 +22,8 @@ class InitOperation extends Operation<Commands.init> {
     const name = nm ?? this.proxy.name;
 
     const files = await fs.readdir(currentDir);
-    console.log(currentDir);
     if (files.length > 0) {
-      throw new VError("Current directory is not empty");
+      throw new Error("Current directory is not empty");
     }
 
     this.values.path = currentDir;
@@ -34,9 +32,12 @@ class InitOperation extends Operation<Commands.init> {
 
   public async prompt({ root }: OverrideSettings = {}) {
     const nroot = root ?? this.root;
-    await this.buildPrompt({
+    const answers = await this.buildPrompt({
       root: nroot,
     });
+
+    if (!answers.confirm && this.cli.confirm)
+      throw new Error("Project creation cancelled");
 
     this.proxy.path = nroot;
     this.proxy.name = basename(nroot);
@@ -79,7 +80,8 @@ class InitOperation extends Operation<Commands.init> {
   };
 
   async process() {
-    const pipeline = task("Generating base", ({ task }) => {
+    const pipeline = task("Generating base", ({ task, setDescription }) => {
+      setDescription(`Path: ${this.values.path}`);
       task("Copying Files", async (t) => {
         await this.copyFiles(t);
       });

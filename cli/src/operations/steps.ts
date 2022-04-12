@@ -16,6 +16,7 @@ export interface GenerateAnswers {
   template: string;
   workspace: string;
   name: string;
+  confirm?: boolean;
 }
 
 interface DeleteParams {
@@ -27,10 +28,15 @@ interface DeleteParams {
 
 export interface DeleteAnswers {
   app: string;
+  confirm?: boolean;
 }
 
 interface InitParams {
   root: string;
+}
+
+export interface InitAnswers {
+  confirm?: boolean;
 }
 
 const generateProcessSteps = (
@@ -59,7 +65,7 @@ const generateProcessSteps = (
   },
   {
     type: "confirm",
-    name: "name",
+    name: "confirm",
     message: (a) => `
         Are you sure you want to create an app named ${
           a.name || p.cli.name
@@ -81,6 +87,7 @@ const deleteProcessSteps = (
     when: !p.useDefault && !p.cli.name,
   },
   {
+    name: "confirm",
     type: "confirm",
     message: (a) => `
       Are you sure you want to delete ${a.app || p.cli.name}?
@@ -89,8 +96,12 @@ const deleteProcessSteps = (
   },
 ];
 
-const initProcessSteps = (p: StepFactoryParams, ip: InitParams) => [
+const initProcessSteps = (
+  p: StepFactoryParams,
+  ip: InitParams
+): Inquirer.QuestionCollection<InitAnswers> => [
   {
+    name: "confirm",
     type: "confirm",
     message: `Are you sure you want initialize a new project in ${ip.root}?`,
     when: !p.useDefault && !p.disableConfirm,

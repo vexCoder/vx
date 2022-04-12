@@ -2,12 +2,12 @@
 import fs from "fs-extra";
 import pMap, * as PMap from "p-map";
 import { dirname, join } from "path";
-import VError from "verror";
+import { render, task, TaskManagerApi } from "../task/taskManager.js";
 import {
   Commands,
+  FileConfig,
   GenerateProxy,
   OpSettings,
-  FileConfig,
 } from "../types/index.js";
 import {
   directoryTraversal,
@@ -17,7 +17,6 @@ import {
   setPkg,
 } from "../utils.js";
 import Operation from "./operation.js";
-import { render, task, TaskManagerApi } from "../task/taskManager.js";
 
 class GenerateOperation extends Operation<Commands.generate> {
   private filesCopied: FileConfig[] = [];
@@ -38,33 +37,33 @@ class GenerateOperation extends Operation<Commands.generate> {
     const templateExists = await fs.pathExists(template);
 
     if (!this.templates.includes(template) && !templateExists) {
-      throw new VError("Template does not exist");
+      throw new Error("Template does not exist");
     }
 
     const nameMatch = /[^a-z_-]/g.test(name || "");
     if (nameMatch || name.length <= 2) {
-      throw new VError(
+      throw new Error(
         "Name must be lowercase, no spaces, no special characters, and at least 3 characters long"
       );
     }
 
     if (!root) {
-      throw new VError("Workspace does not exist");
+      throw new Error("Workspace does not exist");
     }
 
     if (!isRoot && !this.workspaces.includes(workspace)) {
-      throw new VError("Workspace does not exist");
+      throw new Error("Workspace does not exist");
     }
 
     if (this.apps.includes(name)) {
-      throw new VError(`App ${name} already exists`);
+      throw new Error(`App ${name} already exists`);
     }
 
     const destinationExists = await fs.pathExists(destination);
     if (destinationExists) {
       const destinationFiles = await fs.readdir(destination);
       if (destinationFiles.length)
-        throw new VError(`Destination directory has files in it`);
+        throw new Error(`Destination directory has files in it`);
     }
 
     this.values.template = template;
@@ -80,6 +79,9 @@ class GenerateOperation extends Operation<Commands.generate> {
       templates: this.templates,
       workspaces: [...this.workspaces, "root"],
     });
+
+    if (!answers.confirm && this.cli.confirm)
+      throw new Error("App generation cancelled");
 
     const template =
       this.cli.template || answers.template || this.defaultTemplate;

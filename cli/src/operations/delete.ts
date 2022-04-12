@@ -2,7 +2,6 @@ import fs from "fs-extra";
 import pMap from "p-map";
 import { join } from "path";
 import rimraf from "rimraf";
-import VError from "verror";
 import { render, task, TaskManagerApi } from "../task/taskManager.js";
 import {
   Commands,
@@ -28,17 +27,17 @@ class DeleteOperation extends Operation<Commands.delete> {
     const name = options?.name ?? this.proxy.name;
 
     if (!path || !(await fs.pathExists(path || "."))) {
-      throw new VError("Invalid path");
+      throw new Error("Invalid path");
     }
 
     const app = this.appsWithPath.find((v) => v.path === path);
     const pkg = await getPkg(app?.path);
     if (!name || !app?.path || !pkg || pkg?.name !== name) {
-      throw new VError("App is invalid");
+      throw new Error("App is invalid");
     }
 
     if (!(await this.isUnlock(path))) {
-      throw new VError("App is locked");
+      throw new Error("App is locked");
     }
 
     const files = await this.getFiles(path);
@@ -46,7 +45,7 @@ class DeleteOperation extends Operation<Commands.delete> {
       files.length &&
       !files.filter((v) => v.path.indexOf(path) === 0).length
     ) {
-      throw new VError("Files are not in app");
+      throw new Error("Files are not in app");
     }
 
     this.values.name = name;
@@ -55,12 +54,15 @@ class DeleteOperation extends Operation<Commands.delete> {
 
   public async prompt(override?: OverrideSettings) {
     if (!this.appsWithPath.length) {
-      throw new VError("No apps found");
+      throw new Error("No apps found");
     }
 
     const answers = await this.buildPrompt({
       apps: this.appsWithPath,
     });
+
+    if (!answers.confirm && this.cli.confirm)
+      throw new Error("App deletion cancelled");
 
     const name = override?.name ?? this.cli.name ?? answers.app;
     const findApp = this.appsWithPath.find((v) => v.name === name);
