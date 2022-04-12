@@ -6,7 +6,7 @@ import createTaskRunner from "../components/TaskRunner.js";
 
 type TaskOrFail = (arg: TaskManagerApi, err?: Error) => void | Promise<void>;
 
-interface TaskManagerApi extends TaskApi {
+export interface TaskManagerApi extends TaskApi {
   task: (...args: Parameters<typeof task>) => void;
   taskFail: (fn: TaskOrFail) => void;
 }

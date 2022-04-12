@@ -273,6 +273,7 @@ export const getInitFiles = async (destination: string) => {
       src: join(dir, v),
       dest: join(destination, v),
       isDir: (await fs.stat(join(dir, v))).isDirectory(),
+      name: v,
     })
   );
 

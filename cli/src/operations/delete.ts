@@ -1,9 +1,9 @@
-import consola from "consola";
 import fs from "fs-extra";
 import pMap from "p-map";
 import { join } from "path";
 import rimraf from "rimraf";
 import VError from "verror";
+import { render, task, TaskManagerApi } from "../task/taskManager.js";
 import {
   Commands,
   DeleteMapperParams,
@@ -49,6 +49,7 @@ class DeleteOperation extends Operation<Commands.delete> {
       throw new VError("Files are not in app");
     }
 
+    this.values.name = name;
     this.values.path = path;
   }
 
@@ -66,18 +67,6 @@ class DeleteOperation extends Operation<Commands.delete> {
 
     this.proxy.path = findApp?.path;
     this.proxy.name = findApp?.name;
-  }
-
-  async checkApp() {
-    const checkPath =
-      (await fs.pathExists(this.values.path)) &&
-      (await fs.pathExists(join(this.values.path, "package.json")));
-
-    const pkg = await getPkg(this.values.path);
-
-    if (!checkPath) throw new Error("App does not exist");
-    if (this.cli.name.indexOf(pkg.name) === -1)
-      throw new Error("App does not exist");
   }
 
   async getFiles(path?: string) {
@@ -99,7 +88,6 @@ class DeleteOperation extends Operation<Commands.delete> {
         if (err) reject(err);
         else {
           resolve(file);
-          consola.info(`${file.name} deleted`);
         }
       });
     });
@@ -107,19 +95,53 @@ class DeleteOperation extends Operation<Commands.delete> {
     return result;
   }
 
-  async deleteFiles() {
-    const paths = await this.getFiles();
-    const deleted = await pMap(paths, this.deleteFile, {
-      concurrency: this.cli.concurrency,
-    });
+  async checkApp(t?: TaskManagerApi) {
+    t.setStatus("loading");
+    const checkPath =
+      (await fs.pathExists(this.values.path)) &&
+      (await fs.pathExists(join(this.values.path, "package.json")));
 
+    const pkg = await getPkg(this.values.path);
+
+    if (!checkPath) throw new Error("App does not exist");
+    if (this.values.name.indexOf(pkg.name) === -1)
+      throw new Error("App does not exist");
+    t.setStatus("success");
+  }
+
+  async deleteFiles(t?: TaskManagerApi) {
+    t.setStatus("loading");
+    const paths = await this.getFiles();
+    const deleted = await pMap(
+      paths,
+      async (v, i) => {
+        t.setMessage(`Deleting: ${v.name}`);
+        t.setProgress((i + 1) / paths.length);
+        return await this.deleteFile(v);
+      },
+      {
+        concurrency: this.cli.concurrency,
+      }
+    );
+
+    t.setStatus("success");
     return deleted;
   }
 
-  async process() {
-    await this.checkApp();
-    await this.deleteFiles();
-  }
+  process = async () => {
+    const pipeline = task("Deleting files", ({ task }) => {
+      task("Checking Dir", async (t) => {
+        await this.checkApp(t);
+      });
+
+      task("Deleting", async (t) => {
+        await this.deleteFiles(t);
+        await fs.rmdir(this.values.path);
+      });
+    });
+
+    await render([pipeline]);
+  };
 }
 
 export default DeleteOperation;

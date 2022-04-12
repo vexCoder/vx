@@ -40,6 +40,7 @@ export interface GenerateProxy {
 
 export interface DeleteValues {
   path: string;
+  name: string;
 }
 export interface DeleteProxy {
   path?: string;
