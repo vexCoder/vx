@@ -2,6 +2,7 @@ import chalk from "chalk";
 import Cli from "../../src/cli.js";
 import { createTestDir } from "../utils/generator.js";
 
+// Add more options here
 const main = async () => {
   const { dir } = await createTestDir("manual-test", {
     removePkg: true,

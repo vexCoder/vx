@@ -32,13 +32,14 @@ class InitOperation extends Operation<Commands.init> {
     this.values.name = name;
   }
 
-  public async prompt({ root = process.cwd() }: OverrideSettings = {}) {
+  public async prompt({ root }: OverrideSettings = {}) {
+    const nroot = root ?? this.root;
     await this.buildPrompt({
-      root,
+      root: nroot,
     });
 
-    this.proxy.path = root;
-    this.proxy.name = basename(root);
+    this.proxy.path = nroot;
+    this.proxy.name = basename(nroot);
   }
 
   public async copyFile(config: FileConfig) {
