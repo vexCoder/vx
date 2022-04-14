@@ -75,7 +75,7 @@
     "test": "test"
   },
   "files": [
-    "dist"
+    "dist/*"
   ],
   "bin": {
     "vx": "dist/index.js"
