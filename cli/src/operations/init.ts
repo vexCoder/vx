@@ -31,7 +31,7 @@ class InitOperation extends Operation<Commands.init> {
   }
 
   public async prompt({ root }: OverrideSettings = {}) {
-    const nroot = root ?? this.root;
+    const nroot = root ?? this.root ?? process.cwd();
     const answers = await this.buildPrompt({
       root: nroot,
     });

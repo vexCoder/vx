@@ -9,7 +9,7 @@
     "build": "turbo run build --scope=cli",
     "postinstall": "husky install",
     "lint": "turbo run lint --scope=cli",
-    "cli:publish": "yarn workspace cli publish"
+    "cli:publish": "yarn workspace @vxc/vx publish"
   },
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
