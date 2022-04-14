@@ -8,7 +8,8 @@
     "cli:test": "turbo run test --scope=cli --force",
     "build": "turbo run build --scope=cli",
     "postinstall": "husky install",
-    "lint": "turbo run lint --scope=cli"
+    "lint": "turbo run lint --scope=cli",
+    "bootstrap": "lerna bootstrap"
   },
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
@@ -39,6 +40,7 @@
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.4",
+    "lerna": "^4.0.0",
     "lint-staged": "^12.1.4",
     "prettier": "^2.5.1",
     "turbo": "1.1.1",

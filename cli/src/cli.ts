@@ -1,10 +1,9 @@
-import VError from "verror";
-import Command from "./operations/operation.js";
 import DeleteCommand from "./operations/delete.js";
 import GenerateOperation from "./operations/generate.js";
 import InitCommand from "./operations/init.js";
-import * as Utils from "./utils.js";
+import Command from "./operations/operation.js";
 import { CliSettings, Commands } from "./types/index.js";
+import * as Utils from "./utils.js";
 
 interface Processes {
   generate: typeof GenerateOperation;
@@ -29,7 +28,7 @@ class Cli {
     const commands = [Commands.generate, Commands.delete, Commands.init];
     const padded = commands.map((v) => `\n    - ${v}`);
 
-    throw new VError("These are the allowed commands:%s%s%s", ...padded);
+    throw new Error(`These are the allowed commands:\n${padded.join("")}`);
   }
 
   async main(

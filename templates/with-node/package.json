@@ -1,7 +1,6 @@
 {
     "name": "with-node",
     "version": "0.0.0",
-    "private": true,
     "description": "",
     "scripts": {
         "dev": "ts-node src/index.ts",
