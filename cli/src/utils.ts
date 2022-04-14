@@ -154,7 +154,9 @@ export const getTemplateList = (r?: string) => {
     name,
   }));
 
-  let templates = fs.readdirSync(join(root, "templates")).map(map(root));
+  let templates = fs
+    .readdirSync(join(root, "templates"))
+    .map(map(join(root, "templates")));
   let additional = [];
   const vxtemplates = pkg?.vx?.templatesPaths ?? [];
   if (vxtemplates && Array.isArray(vxtemplates) && vxtemplates.length) {
