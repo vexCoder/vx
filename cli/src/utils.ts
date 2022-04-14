@@ -6,8 +6,7 @@ import pMap from "p-map";
 import { dirname, join, normalize } from "path";
 import { PackageJson } from "type-fest";
 import { fileURLToPath } from "url";
-import VError from "verror";
-import { CliSettings, SpinnerOptions } from "./types/index.js";
+import { CliSettings, SpinnerOptions, VXPackageJSON } from "./types/index.js";
 
 export const setRoot = (path?: string) => {
   const newRoot = path ? normalize(path) : process.cwd();
@@ -26,7 +25,7 @@ export const getPkg = (path?: string) => {
   const pkgPath = join(path, "package.json");
   if (!fs.pathExistsSync(pkgPath)) return;
   const pkg = fs.readJSONSync(pkgPath);
-  return pkg as PackageJson;
+  return pkg as VXPackageJSON;
 };
 
 export const setPkg = (path?: string, values: Partial<PackageJson> = {}) => {
@@ -135,9 +134,29 @@ export const getCli = (...argv: string[]): CliSettings => {
   };
 };
 
-export const getTemplateList = () => {
+export const getTemplateList = (r?: string) => {
+  const projectRoot = getProjectRoot(r);
+  const pkg = getPkg(projectRoot);
   const root = getCliRoot();
-  const templates = fs.readdirSync(join(root, "templates"));
+
+  const map = _.curry((path: string, name: string) => ({
+    value: join(path, name),
+    name,
+  }));
+
+  let templates = fs.readdirSync(join(root, "templates")).map(map(root));
+  let additional = [];
+  const vxtemplates = pkg?.vx?.templatesPaths ?? [];
+  if (vxtemplates && Array.isArray(vxtemplates) && vxtemplates.length) {
+    for (let i = 0; i < vxtemplates.length; i++) {
+      const dir = vxtemplates[i];
+      const templatesPath = join(projectRoot, dir);
+      const list = fs.readdirSync(templatesPath).map(map(templatesPath));
+      additional = additional.concat(list);
+    }
+  }
+
+  if (additional.length) templates = templates.concat(additional);
 
   return templates;
 };
@@ -146,9 +165,8 @@ export const getPkgWorkspace = (r?: string) => {
   const root = getProjectRoot(r);
   const pkg = getPkg(root);
 
-  const workspaces: string[] = Array.isArray(pkg.workspaces)
-    ? pkg.workspaces
-    : pkg.workspaces.packages;
+  const w = pkg.vx?.workspaces ?? pkg.workspaces;
+  const workspaces: string[] = Array.isArray(w) ? w : w.packages;
 
   return workspaces || [];
 };
@@ -247,13 +265,15 @@ export const directoryTraversal = async <T = string>(
   path: string,
   matcher: string[],
   callback?: (file: string, dir: string) => Promise<T>,
-  settings?: Options
+  settings?: Options,
+  reverse?: boolean
 ) => {
-  const files = await fg(matcher, {
+  const files = await fg(reverse ? ["**/*"] : matcher, {
     cwd: path,
     dot: true,
     onlyFiles: false,
     markDirectories: true,
+    ...(reverse && { ignore: matcher }),
     ...settings,
   });
 

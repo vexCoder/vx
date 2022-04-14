@@ -1,6 +1,6 @@
 import Inquirer from "inquirer";
 import _ from "lodash";
-import { Commands, CliSettings } from "../types/index.js";
+import { CliSettings, Commands } from "../types/index.js";
 
 interface StepFactoryParams {
   cli: CliSettings;
@@ -9,7 +9,7 @@ interface StepFactoryParams {
 }
 
 interface GenerateParams {
-  templates: string[];
+  templates: { name: string; value: string }[];
   workspaces: string[];
 }
 export interface GenerateAnswers {
@@ -66,11 +66,10 @@ const generateProcessSteps = (
   {
     type: "confirm",
     name: "confirm",
-    message: (a) => `
-        Are you sure you want to create an app named ${
-          a.name || p.cli.name
-        } in ${a.workspace || p.cli.workspace}?
-      `,
+    message: (a) =>
+      `Are you sure you want to create an app named ${
+        a.name || p.cli.name
+      } in ${a.workspace || p.cli.workspace}?`,
     when: !p.useDefault && !p.disableConfirm,
   },
 ];
@@ -89,9 +88,7 @@ const deleteProcessSteps = (
   {
     name: "confirm",
     type: "confirm",
-    message: (a) => `
-      Are you sure you want to delete ${a.app || p.cli.name}?
-    `,
+    message: (a) => `Are you sure you want to delete ${a.app || p.cli.name}?`,
     when: !p.useDefault && !p.disableConfirm,
   },
 ];

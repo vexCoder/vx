@@ -11,7 +11,6 @@ import {
 } from "../types/index.js";
 import {
   directoryTraversal,
-  getCliRoot,
   getPkg,
   getProjectRoot,
   setPkg,
@@ -36,7 +35,7 @@ class GenerateOperation extends Operation<Commands.generate> {
 
     const templateExists = await fs.pathExists(template);
 
-    if (!this.templates.includes(template) && !templateExists) {
+    if (!this.templates.find((v) => v.value === template) && !templateExists) {
       throw new Error("Template does not exist");
     }
 
@@ -84,14 +83,16 @@ class GenerateOperation extends Operation<Commands.generate> {
       throw new Error("App generation cancelled");
 
     const template =
-      this.cli.template || answers.template || this.defaultTemplate;
+      this.templates.find((v) => v.name === this.cli.template)?.value ||
+      answers.template ||
+      this.defaultTemplate.value;
 
     const workspace =
       this.cli.workspace || answers.workspace || this.defaultWorkspace;
 
     const name = this.cli.name || answers.name;
 
-    const templatePath = join(getCliRoot(), "templates", template);
+    const templatePath = template;
 
     const root = this.root ?? getProjectRoot();
     const isRoot = workspace === "root" && !this.workspaces.includes("root");
@@ -109,9 +110,13 @@ class GenerateOperation extends Operation<Commands.generate> {
 
   private async getTemplateFiles() {
     const { template, destination } = this.values;
-    const matchGlob = (await fs.readFile(join(template, ".vxmatch"), "utf8"))
-      .split("\n")
-      .map((v) => v.trim());
+    const vxignorePath = join(template, ".vxignore");
+    if (!(await fs.pathExists(vxignorePath)))
+      throw new Error("Template does not have a .vxignore file");
+
+    const matcher = await fs.readFile(vxignorePath, "utf8");
+    const matchGlob = matcher.split("\n").map((v) => v.trim());
+    matchGlob.push(".vxignore");
 
     const map = async (v, dir) => ({
       name: v,
@@ -120,9 +125,15 @@ class GenerateOperation extends Operation<Commands.generate> {
       isDir: (await fs.stat(join(dir, v))).isDirectory(),
     });
 
-    const files = await directoryTraversal(template, matchGlob, map, {
-      onlyFiles: true,
-    });
+    const files = await directoryTraversal(
+      template,
+      matchGlob,
+      map,
+      {
+        onlyFiles: true,
+      },
+      true
+    );
 
     return files;
   }
@@ -216,7 +227,6 @@ class GenerateOperation extends Operation<Commands.generate> {
   setupApp = (t: TaskManagerApi) => {
     t.setStatus("loading");
     this.appendToWorkspace();
-    console.log(this.values.root, this.values.name);
     setPkg(this.values.destination, { name: this.values.name });
     t.setStatus("success");
   };

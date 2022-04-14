@@ -26,7 +26,7 @@ abstract class Operation<T extends Commands> {
   public override: Settings = {};
 
   get templates() {
-    return getTemplateList();
+    return getTemplateList(this.root);
   }
 
   get defaultTemplate() {

@@ -40,7 +40,7 @@ function Task({ task }: TaskProps) {
         )}
         <Spacer />
         {!task.execution && typeof task.progress === "number" && (
-          <Progression play={!isError} progress={task.progress} rate={60} />
+          <Progression play={!isError} progress={task.progress} rate={30} />
         )}
         {task.execution && (
           <Text color="gray">{`took ${task.execution.toFixed(3)}s`}</Text>

@@ -7,11 +7,12 @@ import GenerateOperation from "../../src/operations/generate.js";
 import { getCli } from "../../src/utils.js";
 import { getTestDir } from "./utils.js";
 import InitOperation from "../../src/operations/init.js";
+import { VXPackageJSON } from "../../src/types/utils.types.js";
 
 interface CreateTestDirOptions {
   removeDir?: boolean;
   removePkg?: boolean;
-  pkg?: PackageJson;
+  pkg?: VXPackageJSON;
 }
 
 export type CreateTestDirValue = {

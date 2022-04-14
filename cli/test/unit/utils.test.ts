@@ -98,8 +98,8 @@ test("get templates", (t) => {
   const templates = getTemplateList();
 
   t.true(templates.length > 0);
-  t.true(templates.includes("with-vite-react"));
-  t.true(templates.includes("with-node"));
+  t.true(templates.map((v) => v.name).includes("with-vite-react"));
+  t.true(templates.map((v) => v.name).includes("with-node"));
 });
 
 test("get workspaces", (t) => {
