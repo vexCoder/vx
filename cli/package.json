@@ -1,6 +1,6 @@
 {
   "name": "cli",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "type": "module",
   "description": "CLI manager for vex-turbo-boilerplate",
   "author": "vexCoder <freelance.starterpack08@gmail.com>",
@@ -19,6 +19,14 @@
   },
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/vexCoder/vx/issues"
+  },
+  "homepage": "https://github.com/vexCoder/vx#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vexCoder/vx.git"
   },
   "keywords": [],
   "license": "MIT",

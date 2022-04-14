@@ -1,6 +1,6 @@
 {
   "name": "@vxc/vx",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "description": "CLI manager for vex-turbo-boilerplate",
   "type": "module",
   "private": true,
@@ -14,9 +14,13 @@
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
   },
+  "bugs": {
+    "url": "https://github.com/vexCoder/vx/issues"
+  },
+  "homepage": "https://github.com/vexCoder/vx#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vexCoder/vx.git"
+    "url": "https://github.com/vexCoder/vx.git"
   },
   "workspaces": {
     "packages": [
@@ -48,10 +52,6 @@
   "resolutions": {
     "typescript": "4.6.2"
   },
-  "bugs": {
-    "url": "https://github.com/vexCoder/vx/issues"
-  },
-  "homepage": "https://github.com/vexCoder/vx#readme",
   "main": "index.js",
   "directories": {
     "example": "example",
