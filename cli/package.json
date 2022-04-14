@@ -74,5 +74,6 @@
   "directories": {
     "example": "example",
     "test": "test"
-  }
+  },
+  "gitHead": "f1c95f7a58f28f2788d76dd9e05091bf88f718ba"
 }

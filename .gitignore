@@ -8,3 +8,4 @@ sample
 art
 .husky
 .vscode
+lerna-debug.*

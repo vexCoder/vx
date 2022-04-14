@@ -14,7 +14,7 @@
         "ts-node": "^10.4.0"
     },
     "devDependencies": {
-      "@types/node": "^17.0.6"
-    }
-  }
-  
+        "@types/node": "^17.0.6"
+    },
+    "gitHead": "f1c95f7a58f28f2788d76dd9e05091bf88f718ba"
+}
