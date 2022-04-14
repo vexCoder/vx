@@ -1,6 +1,6 @@
 {
   "name": "@vxc/vx",
-  "version": "3.0.2",
+  "version": "3.0.4",
   "description": "CLI manager for vex-turbo-boilerplate",
   "type": "module",
   "private": true,
