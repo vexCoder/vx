@@ -40,7 +40,7 @@ class InitOperation extends Operation<Commands.init> {
       throw new Error("Project creation cancelled");
 
     this.proxy.path = nroot;
-    this.proxy.name = basename(nroot);
+    this.proxy.name = this.cli.name ?? basename(nroot);
   }
 
   public async copyFile(config: FileConfig) {

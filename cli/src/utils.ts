@@ -1,3 +1,4 @@
+import dedent from "dedent";
 import fg, { Options } from "fast-glob";
 import fs from "fs-extra";
 import _ from "lodash";
@@ -73,33 +74,36 @@ export const getCliRoot = () =>
 
 export const getCli = (...argv: string[]): CliSettings => {
   const cli = meow(
-    `
-        Usage
-        $ vx <command> [options]
-      
-        Commands
-          generate  Generate a new app
-          delete    Remove an app
-          init      Initialize vex-turbo-boilerplate files
-          
-        Options
-          --help, -h  Show help
-          --version, -v  Show version
-          --template, -t  Template to use
-          --name, -n  Name of the app
-          --type, -t  App type, this is based on the workspace, or vx paths settings
-          --no-confirm, Disable confirmation
-          --dir Change the current working directory
+    dedent(`
+    Usage
+      $ vx <command> [options]
 
-          init config: 
-          --author, -a  Author of the project
-          --email, -e  Author email
-      
-      
-        Examples
-          $ vx generate --template=react-app --name=my-app
-          $ vx init --author=John
-        `,
+    Commands
+      generate  Generate a new app
+      delete    Remove an app
+      init      Initialize vex-turbo-boilerplate files
+
+    Options
+    
+      --help, Show help
+      --version,  Show version
+      --no-confirm, Disable confirmation
+      --dir, Change the current working directory 
+
+    generate
+      --template, -t  Template to use
+      --name, -n  Name of the app
+
+    delete
+      --name, -n  Name of the app
+
+    init
+      --name, -n Monorepo project name 
+
+    Examples
+      $ vx generate --template=react-app --name=my-app
+      $ vx init --name=monorepo-name
+        `),
     {
       importMeta: import.meta,
       ...(!!argv.length && { argv }),

@@ -24,25 +24,34 @@ yarn global add vx
 ## Usage
 
 ```bash
-    Usage
-    $ vx <command> [options]
+Usage
+  $ vx <command> [options]
 
-    Commands
-    generate  Generate a new app
-    delete    Remove an app
-    init      Initialize vex-turbo-boilerplate files
+Commands
+  generate  Generate a new app
+  delete    Remove an app
+  init      Initialize vex-turbo-boilerplate files
 
-    Options
-    --help, -h  Show help
-    --version, -v  Show version
-    --template, -t  Template to use
-    --name, -n  Name of the app
-    --type, -t  App type, this is based on the workspace, or vx paths settings
-    --no-confirm, Disable confirmation
+Options
 
+  --help  Show help
+  --version  Show version
+  --no-confirm, Disable confirmation
+  --dir, Change the current working directory 
 
-    Examples
-    $ vx generate --template=react-app --name=my-app
+generate
+  --template, -t  Template to use
+  --name, -n  Name of the app
+
+delete
+  --name, -n  Name of the app
+
+init
+  --name, -n Monorepo project name 
+
+Examples
+  $ vx generate --template=react-app --name=my-app
+  $ vx init --namte=monorepo-name
 ```
 
 ### **Adding Templates**
