@@ -10,8 +10,8 @@
     "postinstall": "husky install",
     "lint": "turbo run lint --scope=cli",
     "bootstrap": "lerna bootstrap --scope cli",
-    "publish": "lerna publish from-package --dist-tag latest",
-    "publish:dry-run": "lerna publish from-package --dist-tag latest --registry=\"http://localhost:4873/\""
+    "cli:publish": "lerna publish from-package --dist-tag latest",
+    "cli:publish:dry-run": "lerna publish from-package --dist-tag latest --registry=\"http://localhost:4873/\""
   },
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"

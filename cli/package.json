@@ -1,6 +1,6 @@
 {
   "name": "cli",
-  "version": "1.0.0",
+  "version": "3.0.1",
   "type": "module",
   "scripts": {
     "initializer": "rimraf dist/init && cpy ../init !../init/node_modules dist/init --parents --dot",
@@ -75,5 +75,5 @@
     "example": "example",
     "test": "test"
   },
-  "gitHead": "2d9ab1c5379ce63032063adb10fd9d67ca61d4f1"
+  "gitHead": "371fd6464862188d3db75aa2eb61509578cac5b1"
 }
