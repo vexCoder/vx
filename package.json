@@ -9,9 +9,7 @@
     "build": "turbo run build --scope=cli",
     "postinstall": "husky install",
     "lint": "turbo run lint --scope=cli",
-    "bootstrap": "lerna bootstrap --scope cli",
-    "cli:publish": "lerna publish from-package --dist-tag latest",
-    "cli:publish:dry-run": "lerna publish from-package --dist-tag latest --registry=\"http://localhost:4873/\""
+    "cli:publish": "yarn workspace cli publish"
   },
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
@@ -42,7 +40,6 @@
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.4",
-    "lerna": "^4.0.0",
     "lint-staged": "^12.1.4",
     "prettier": "^2.5.1",
     "turbo": "1.1.1",
@@ -50,9 +47,6 @@
   },
   "resolutions": {
     "typescript": "4.6.2"
-  },
-  "bin": {
-    "vx": "cli/dist/cli.js"
   },
   "bugs": {
     "url": "https://github.com/vexCoder/vx/issues"

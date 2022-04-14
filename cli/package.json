@@ -75,5 +75,11 @@
     "example": "example",
     "test": "test"
   },
-  "gitHead": "371fd6464862188d3db75aa2eb61509578cac5b1"
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "vx": "dist/index.js"
+  },
+  "gitHead": "2b53c0a5739a76a2085a1223afd662342b09c1bd"
 }
