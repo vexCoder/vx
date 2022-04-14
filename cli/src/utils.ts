@@ -69,8 +69,14 @@ export const getProjectRoot = (r?: string) => {
   return root;
 };
 
-export const getCliRoot = () =>
-  join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+export const getCliRoot = () => {
+  const path = dirname(fileURLToPath(import.meta.url));
+  if (fs.pathExistsSync(join(path, "init"))) {
+    return path;
+  }
+
+  return join(path, "..", "..");
+};
 
 export const getCli = (...argv: string[]): CliSettings => {
   const cli = meow(
