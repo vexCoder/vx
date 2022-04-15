@@ -103,12 +103,21 @@ To delete apps you need to create an empty `.unlock` file in the app directory
 ## Roadmap
 
 - [x] Generate App
-  - [x] Template Types
-  - [x] templatesPaths
+  - [ ] Template Types
+    - [x] Node App
+    - [x] React Vite App
+    - [ ] NextJS App
+  - [x] Extra Template Paths
 - [x] Delete App
 - [x] Initialize Base
   - [ ] Base Types
-- [x] Operations use InkJS
+    - [x] Turbo Project
+    - [ ] Lerna Project
+    - [ ] Godot EcmaScript Project
+- [x] InkJS Renderer
+  - [ ] Operations
+  - [ ] Replace Inquirer.JS
+- [ ] Add Publish Script
 
 <br/>
 
