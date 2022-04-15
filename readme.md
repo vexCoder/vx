@@ -115,7 +115,7 @@ To delete apps you need to create an empty `.unlock` file in the app directory
     - [ ] Lerna Project
     - [ ] Godot EcmaScript Project
 - [x] InkJS Renderer
-  - [ ] Operations
+  - [x] Operations
   - [ ] Replace Inquirer.JS
 - [ ] Add Publish Script
 
